@@ -1,0 +1,14 @@
+{
+  "repoType": "dotnet|cpp|java|python|other",
+  "specOutputPath": "./docs/specs",
+  "ticketSource": "jira",
+  "jiraConfig": {
+    "host": "https://jira.trimble.tools",
+    "projectKey": "YOUR_PROJECT"
+  },
+  "repositoryInfo": {
+    "name": "your-repo-name",
+    "language": "C#|C++|Java|Python|etc",
+    "description": "Brief description of repo purpose"
+  }
+}
