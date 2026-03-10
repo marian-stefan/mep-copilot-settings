@@ -70,5 +70,5 @@ Return a validation summary block in Technical Context output:
 
 ## Spec Quality Validation (Reviewer)
 
-Spec quality scoring remains owned by the resolved Reviewer Agent.
-Reviewer selection is determined by `.github/skills/specs-technology-routing/SKILL.md` with fallback to `Generic Reviewer`.
+Spec quality scoring remains owned by `Generic Reviewer`.
+Stack-specific review depth is determined by `.github/skills/specs-technology-routing/SKILL.md`, which may resolve an optional `reviewSkill` for `Generic Reviewer` to load.

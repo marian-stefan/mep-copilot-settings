@@ -1,11 +1,13 @@
 ---
-name: specs-generation
-description: Consolidated sections for Story, Epic, and Spike Specs generation. Includes structure and guidance for all Specs section types (Overview, Background, Requirements, Architecture, Security, Implementation, Testing, Risk, Rollout, Epic-specific, and Spike-specific sections).
+name: specs-generation-angular
+description: Angular/Nx plugin extension for Specs generation. Adds stack-specific architecture, implementation, and testing guidance to the technology-agnostic core template.
 ---
 
-# Specs File Generation
+# Specs Generation Angular Plugin
 
-This skill consolidates all sections for Specs generation. Use these sections as reference for the structure and content expected in each Specs section. The Specs Writer agent will populate these sections with real values extracted from the Technical Context of the Jira ticket.
+This skill contains Angular and Nx-specific guidance that extends the technology-agnostic core template at `.github/skills/specs-generation-core/SKILL.md`.
+
+Use this skill only when the resolved technology plugin is `angular`.
 
 ---
 

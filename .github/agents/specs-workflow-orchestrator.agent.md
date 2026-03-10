@@ -6,13 +6,13 @@ user-invocable: true
 disable-model-invocation: false
 ---
 
-# Specs Workflow Orchestrator (Generic)
+# Specs Workflow Orchestrator
 
 ## Purpose & Persona
 
 Central coordinator for the multi-agent Specs generation workflow. Manages state transitions, agent routing, error recovery, and artifact handoffs to transform a ticket into a committed Spec file.
 
-This is a generic, Nx-agnostic version suitable for non-Nx repos (.NET, C++, etc).
+This is a generic, technology-agnostic orchestrator. Technology-specific behavior is resolved via skills.
 
 ## Focus Areas
 
@@ -24,7 +24,7 @@ This is a generic, Nx-agnostic version suitable for non-Nx repos (.NET, C++, etc
 
 ## Scope
 
-Operates over: Tickets, code repos, Spec artifacts, git operations (no Nx, no backend discovery).
+Operates over: Tickets, code repos, Spec artifacts, git operations.
 
 ## Inputs/Outputs
 
@@ -34,19 +34,18 @@ Operates over: Tickets, code repos, Spec artifacts, git operations (no Nx, no ba
 ## Single Source of Truth
 
 - Routing, filenames, and artifact naming: `specs-workflow-routing/SKILL.md`
-- Technology plugin detection and reviewer routing: `specs-technology-routing/SKILL.md`
-- Technology plugin contract: `specs-technology-plugin-contract/SKILL.md`
+- Technology plugin detection and review-skill routing: `specs-technology-routing/SKILL.md`
 - Validation/scoring policy: `specs-validation/SKILL.md`
 - Error taxonomy and response templates: `specs-error-handling/SKILL.md`
 - Invocation patterns: `specs-subagent-invocation/SKILL.md`
 
 ## Core Workflow
 
-The orchestrator executes six steps:
+The orchestrator executes seven steps:
 
 1. **ANALYZE** - Extract requirements from ticket source
 2. **ROUTE** - Validate issue type and route agents
-3. **RESOLVE_TECH_PLUGIN** - Resolve technology plugin, reviewer, and spec extension guidance
+3. **RESOLVE_TECH_PLUGIN** - Resolve technology plugin, review skill, and spec extension guidance
 4. **RESEARCH** - Analyze codebase and plan implementation
 5. **GENERATE** - Write formal Spec document
 6. **VALIDATE** - Review quality and completeness using resolved reviewer
@@ -74,7 +73,7 @@ See `specs-error-handling/SKILL.md` for detailed error patterns.
 - See `prompts/create-specs.prompt.md` for user-facing command documentation
 - See `skills/specs-validation/SKILL.md` for validation gates
 - See `skills/specs-workflow-routing/SKILL.md` for routing and artifact naming
-- See `skills/specs-technology-routing/SKILL.md` for plugin and reviewer resolution
+- See `skills/specs-technology-routing/SKILL.md` for plugin resolution, routing, and plugin structure
 - See `skills/specs-error-handling/SKILL.md` for error templates
 - See `skills/specs-subagent-invocation/SKILL.md` for invocation standards
 
@@ -83,8 +82,8 @@ See `specs-error-handling/SKILL.md` for detailed error patterns.
 During `RESOLVE_TECH_PLUGIN`, the orchestrator resolves and stores:
 
 - `pluginId`
-- `reviewerAgent`
+- `reviewSkill`
 - `specExtensionSkill`
 - `researchFocus`
 
-The resolved values are passed to Tech Researcher and Specs Writer. The validation step must invoke `reviewerAgent` from resolved plugin output, with fallback to `Generic Reviewer`.
+The resolved values are passed to Tech Researcher and Specs Writer. The validation step must invoke `Generic Reviewer` and provide `reviewSkill` from resolved plugin output when available.

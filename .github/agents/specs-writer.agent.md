@@ -36,26 +36,21 @@ Operates over: Requirement Brief (from Jira Analyst) and Technical Context (from
 
 ## Core Workflow
 
-0.  **Issue Type Detection (AUTO)**: Extract `issueType` from Technical Context, determine output filename:
+1.  **Issue Type Detection (AUTO)**: Extract `issueType` from Technical Context, determine output filename:
   - Resolve filename from `.github/skills/specs-workflow-routing/SKILL.md`
 
-0.5. **Pre-flight**: Verify the Technical Context contains an explicit line `Backend services required: Yes/No`. If backend work is required, ensure the Technical Context carries real Swagger/OpenAPI URLs inside Backend Service Dependencies; abort and return remediation steps if the declaration or Swagger evidence is missing.
 
-1.  **Load Templates**:
+2.  **Load Templates**:
   - Read core sections from `.github/skills/specs-generation-core/SKILL.md`.
   - If orchestrator provided `specExtensionSkill`, read it and merge plugin-specific guidance.
 
-2.  **Input Synthesis**: Combine the business requirements and technical design. Extract concrete values from Technical Context:
+3.  **Input Synthesis**: Combine the business requirements and technical design. Extract concrete values from Technical Context:
   - Real file paths WITH line numbers/ranges from "Impacted Components"
   - Before/after code snippets from "Proposed Changes"
-  - Actual DTO/interface names and complete definitions from "API Changes and DTOs"
-  - Endpoint URLs and schemas from "Backend Service Dependencies"
-  - Component/service names and complete class structures from "Proposed Changes"
-  - State property names, action signatures, selector implementations from state management sections
-    - Complete implementation commands/steps with all parameters populated (no placeholders)
-  - Method signatures with parameters, return types, and implementation snippets
+  - Actual DTO/interface names from "API Changes and DTOs"
 
-3.  **Drafting**:
+
+4.  **Drafting**:
   - Follow section structures from `.github/skills/specs-generation-core/SKILL.md`.
   - Apply plugin extension sections when `specExtensionSkill` is present.
   - **Populate templates with concrete examples** from Technical Context (not generic `{placeholders}`).
@@ -63,11 +58,11 @@ Operates over: Requirement Brief (from Jira Analyst) and Technical Context (from
   - **For Epic**: Include milestones, child ticket breakdown, cross-team coordination.
   - **For Spike**: Include experiments, timebox, success/failure criteria, follow-up recommendations.
 
-4.  **Formatting**: Use clean Markdown.
+5.  **Formatting**: Use clean Markdown.
 
-5.  **Review**: Check for consistency between requirements and technical plan.
+6.  **Review**: Check for consistency between requirements and technical plan.
 
-6.  **REQUIRED: Create Spec File**:
+7.  **REQUIRED: Create Spec File**:
   - **Tool**: MUST use `create_file` tool (not manual instructions)
   - **Filename**: Determined by issue type (see step 0)
   - **Location**: Repository root (path: `SPEC-{JIRA_KEY}-{Plan|Epic|Spike}.md`)
@@ -79,7 +74,7 @@ Operates over: Requirement Brief (from Jira Analyst) and Technical Context (from
       content: specMarkdownContent
     });
     ```
-7.  **REQUIRED: Validate File Creation**:
+8.  **REQUIRED: Validate File Creation**:
   - **Verify**: File exists at expected path
   - **Check**: File size > 0 bytes (not empty)
   - **Confirm**: Filename matches routing matrix pattern for detected issue type
@@ -174,13 +169,13 @@ Do not redefine section structures or scoring thresholds in this file; consume a
 ## Writing Guidelines
 
 1. **Be Concrete**: Include specific file paths, component names, exact commands **with real values from Technical Context**
-   - ❌ `libs/{domain}/{feature}/feature` 
-   - ✅ `libs/hcui/estimate/feature/src/lib/estimate-list/estimate-list.component.ts`
+  - ❌ `src/{module}/{feature}`
+  - ✅ `src/services/estimate/estimate-service` (use actual paths from Technical Context)
 
 2. **Be Actionable with Code Examples**: Developers should be able to copy-paste key snippets
    - Include **actual imports**, **state property names**, **method signatures** from Technical Context
    - Show **before/after** for modifications, **complete example** for new code
-   - Reference the **specs-generation** skill for comprehensive patterns
+  - Reference `.github/skills/specs-generation-core/SKILL.md` and resolved plugin extension skill for patterns
 
 3. **Extract from Technical Context**: 
    - Use exact file paths listed in "Impacted Components"
@@ -189,7 +184,7 @@ Do not redefine section structures or scoring thresholds in this file; consume a
    - Use component/service names from "Proposed Changes"
 
 4. **Reference Existing Patterns**: Point to similar implementations found in technical context
-   - Example: "Similar pattern exists in `libs/shared/estimating/drawings-data-access`"
+  - Example: "Similar pattern exists in `src/shared/data/data-repository`"
 
 5. **Avoid Duplication**: Reference instruction files instead of repeating architecture rules.
   - Use plugin extension guidance for stack-specific details.
@@ -205,7 +200,6 @@ Do not redefine section structures or scoring thresholds in this file; consume a
 
 8. **Document Deviations**: If a feature requires non-standard patterns, explain why
 
-9. **Always cite Swagger**: When backend work exists, reference the real Swagger/OpenAPI URLs in the Backend Service Dependencies subsection and mirror the `Backend services required: Yes/No` decision from the Technical Context.
 
 **Quality Check Before Output:**
 - [ ] All file paths are real paths from Technical Context (no `{placeholder}` syntax)

@@ -83,7 +83,6 @@ See [specs-error-handling/SKILL.md](../skills/specs-error-handling/SKILL.md) for
 Quality scoring policy is canonical in:
 
 - [specs-validation/SKILL.md](../skills/specs-validation/SKILL.md)
-- [specs-technology-routing/SKILL.md](../skills/specs-technology-routing/SKILL.md)
 
 ## Agent References
 

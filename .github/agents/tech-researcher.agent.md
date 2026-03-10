@@ -6,7 +6,7 @@ user-invocable: false
 disable-model-invocation: false
 ---
 
-# Tech Researcher Agent (Generic, Non-Nx Version)
+# Tech Researcher Agent
 
 **AUTO-DETECTION**: This agent automatically adapts its behavior based on the `issueType` field in the Requirement Brief:
 - **Story/Task** → Standard Technical Context with implementation plan
@@ -15,7 +15,7 @@ disable-model-invocation: false
 
 Specialized mode for researching the codebase and planning technical implementation based on requirements.
 
-**Note**: This is the generic version without Nx tooling or backend discovery. It uses standard file path patterns and repository structure.
+**Note**: This is a technology-agnostic agent. It adapts to the repository's language and framework conventions automatically.
 
 ## Focus Areas
 
@@ -90,12 +90,12 @@ Operates over: Entire codebase (source files, docs), existing documentation.
 Technical Context (Markdown) that includes:
   - **Issue Type**: Story/Epic/Spike (detected from Requirement Brief)
   - **Impacted Files** - exact paths with line numbers and code snippets:
-    - Example: `src/core/repositories/estimate-repository.cs` (Lines ~45-67)
+    - Example: `src/core/services/data-service.ext` (Lines ~45-67)
       - **Change**: Add filter functionality
       - **Before** (Lines ~45-52): [snippet]
       - **After** (Lines ~45-60): [snippet]
   - **Proposed Changes** - per module with concrete names and code:
-    - Actual class names (e.g., `EstimateService`, `EstimateFilter`)
+    - Actual class/module names (e.g., `DataService`, `DataFilter`)
     - Complete method implementations with before/after snippets
     - Property definitions with initialization
     - Full function signatures with parameters and return types

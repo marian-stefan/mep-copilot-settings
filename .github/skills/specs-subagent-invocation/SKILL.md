@@ -53,6 +53,3 @@ const implementationPlan = await runSubagent({
 - Validation rules: `.github/skills/specs-validation/SKILL.md`
 - Routing and naming: `.github/skills/specs-workflow-routing/SKILL.md`
 - Error handling patterns: `.github/skills/specs-error-handling/SKILL.md`
- - Validation rules: `.github/skills/specs-validation/SKILL.md`
- - Routing and naming: `.github/skills/specs-workflow-routing/SKILL.md`
- - Error handling patterns: `.github/skills/specs-error-handling/SKILL.md`

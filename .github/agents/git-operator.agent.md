@@ -108,7 +108,7 @@ Operates over: Git repository, Ticket ID, Files to commit.
   ```
 - Failure:
   ```
-  Aborted: Unrelated staged files detected: libs/xyz/src/lib/other.ts
+  Aborted: Unrelated staged files detected: path/to/unrelated-file
   Please stash or commit these changes, then re-run the Git Operator.
   ```
 
