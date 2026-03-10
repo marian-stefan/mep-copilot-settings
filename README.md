@@ -1,1 +1,1 @@
-# copilot-demos
+# mep-copilot-settings
