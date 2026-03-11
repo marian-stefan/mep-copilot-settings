@@ -31,7 +31,7 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 ├── config/
 │   └── repo.config.sample.json     # Per-repo config template
 ├── README.md                       # This file
-└── RUN.md                          # Step-by-step execution guide
+└── SPECS-WORKFLOW-GUIDE.md         # Step-by-step execution guide
 ```
 
 ## Key Features
@@ -46,10 +46,11 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 
 1. Copy `.github/` folder to your repository root
 2. Configure `.github/config/repo.config.json` for your repo
-3. Run the `create-specs` prompt or agent workflow
-4. Review the generated spec and merge the branch
+3. Add a `.github/copilot-instructions.md` file if one doesn't exist yet — see [GitHub Copilot Instructions](https://code.visualstudio.com/docs/copilot/customization/custom-instructions) for reference
+4. Run the `create-specs` prompt or agent workflow
+5. Review the generated spec and begin implementation
 
-See [RUN.md](RUN.md) for detailed step-by-step instructions.
+See [SPECS-WORKFLOW-GUIDE.md](SPECS-WORKFLOW-GUIDE.md) for detailed step-by-step instructions.
 
 ## Workflow Steps
 
