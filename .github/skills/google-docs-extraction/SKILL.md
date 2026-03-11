@@ -12,7 +12,7 @@ This skill enables detection and extraction of content from Google Docs and Goog
 ### Required Environment Variables
 
 | Variable | Description | Example |
-|- --------- | ------------- | -------- |
+| ---------- | ------------- | --------- |
 | `TRIMBLE_CLIENT_ID` | OAuth 2.0 Client ID for Trimble authentication | `your-client-id` |
 | `TRIMBLE_CLIENT_SECRET` | OAuth 2.0 Client Secret for Trimble authentication | `your-client-secret` |
 | `TRIMBLE_OAUTH_SCOPE` | OAuth scope for n8n webhook access | `Agentic-N8N-Webhook` |

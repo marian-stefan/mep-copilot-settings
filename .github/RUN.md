@@ -77,16 +77,16 @@ FLAGS: --push (optional)
 
 ## What Happens
 
-The workflow automatically executes 6 steps:
+The workflow automatically executes these steps:
 
 | Step | Agent | Output | Time |
 | ------ | ------- | -------- | ------ |
-| 1 | **Analyst** | `BRIEF-{KEY}.md` | 2-5 min |
-| 2 | **Researcher** | `CONTEXT-{KEY}.md` | 5-10 min |
-| 3 | **Writer** | `SPEC-{KEY}-Plan.md` | 3-5 min |
-| 4 | **Generic Reviewer (+ review skill)** | Quality Report | 2-3 min |
+| 1 | **Jira Analyst** | `BRIEF-{KEY}.md` | 2-5 min |
+| *(Route + Resolve)* | *(Orchestrator internal)* | Routing + plugin decision | <1 min |
+| 2 | **Tech Researcher** | `CONTEXT-{KEY}.md` | 5-10 min |
+| 3 | **Specs Writer** | `SPEC-{KEY}-*.md` | 3-5 min |
+| 4 | **Generic Reviewer** (+ review skill) | Quality Report | 2-3 min |
 | 5 | **Git Operator** | Branch + Commit | 1-2 min |
-| 6 | **Orchestrator** | Summary | <1 min |
 
 **Total Time**: Typically 15-30 minutes
 

@@ -55,7 +55,7 @@ See [RUN.md](RUN.md) for detailed step-by-step instructions.
 
 ### 1. Analyze (Jira Analyst)
 
-Extract requirements, acceptance criteria, and acceptance criteria from ticket.
+Extract requirements, acceptance criteria, and ticket context.
 
 ### 2. Route (Orchestrator)
 

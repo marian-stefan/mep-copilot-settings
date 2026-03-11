@@ -117,13 +117,6 @@ Scoring components:
 - `security`: number of security issues
 - `missing_tests`: count of public-surface changes without corresponding tests
 
-## Constraints
-
-- No fabricated tool output; clearly mark assumptions.
-- Deduplicate repeated findings (give representative examples instead of listing all).
-- Nitpicks limited (≤20%).
-- Prefer patch diffs for small fixes and a plan for larger refactors.
-
 ## Examples
 
 | Command              | Purpose        | Outcome                                                        |
