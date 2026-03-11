@@ -9,7 +9,7 @@ Use this skill as the single source of truth for selecting technology plugins.
 
 ## Inputs
 
-- `repo.config.json` (if present)
+- `.github/config/repo.config.json` (if present)
 - Repository file patterns
 
 ## Resolution Output
@@ -86,7 +86,7 @@ validationExtensions:
 1. Create an extension skill file at `.github/skills/specs-generation-{pluginId}/SKILL.md`.
 2. Create a review skill file at `.github/skills/review-{pluginId}/SKILL.md` when stack-specific review checks are needed.
 3. Add a registry entry with `pluginId`, `priority`, `reviewSkill`, `specExtensionSkill`, and `matchRules`.
-4. Prefer explicit matching via `config/repo.config.json` (`repoType` and `language`).
+4. Prefer explicit matching via `.github/config/repo.config.json` (`repoType` and `language`).
 5. Add file heuristics as fallback when config is missing.
 6. Keep `generic` as the fallback plugin.
 

@@ -102,7 +102,7 @@ Create feature branch, commit spec, optionally push to remote.
 
 ## Configuration
 
-Edit `config/repo.config.json`:
+Edit `.github/config/repo.config.json`:
 
 ```json
 {
@@ -110,7 +110,7 @@ Edit `config/repo.config.json`:
   "specOutputPath": "./docs/specs",
   "ticketSource": "jira",
   "jiraConfig": {
-    "host": "https://your-jira.atlassian.net",
+    "host": "https://jira.trimble.tools",
     "projectKey": "PROJ"
   },
   "repositoryInfo": {
@@ -145,7 +145,7 @@ See `skills/specs-error-handling/SKILL.md` for detailed error taxonomy.
 
 The workflow is fully technology-agnostic. To tailor it for your stack:
 
-1. Set `repoType` and `language` in `config/repo.config.json`
+1. Set `repoType` and `language` in `.github/config/repo.config.json`
 2. Tech Researcher adapts automatically to your language conventions
 3. To add stack-specific guidance, create a technology plugin:
     - Register the plugin in `skills/specs-technology-routing/SKILL.md`
