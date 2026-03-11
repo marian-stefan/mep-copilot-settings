@@ -41,7 +41,6 @@ Failure action: proceed with warning banner and record failed gates in state.
 Failure action: log metrics only.
 
 ## Quality Gate Scoring (Decision Logic)
-## Quality Gate Scoring (Decision Logic)
 
 - If all critical gates pass:
   - If >=4 important gates pass: proceed with no warnings

@@ -36,13 +36,13 @@ The orchestrator coordinates a team of specialized agents to transform a ticket 
 
 ```
 ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
-│   Ticket    │───▶│   Route &   │───▶│    Tech     │───▶│   Specs     │───▶│  Reviewer   │───▶│     Git     │
-│   Analyst   │    │   Validate  │    │  Researcher │    │   Writer    │    │  Gates      │    │  Operator   │
+│   Jira      │───▶│   Route &   │───▶│    Tech     │───▶│   Specs     │───▶│  Reviewer   │───▶│     Git     │
+│   Analyst   │    │   Resolve   │    │  Researcher │    │   Writer    │    │  (Validate) │    │  Operator   │
 └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
        │                  │                  │                  │                  │                  │
        ▼                  ▼                  ▼                  ▼                  ▼                  ▼
-  Requirement        Issue Type         Technical            Spec File       Quality Decision   Branch +
-    Brief              Routing           Context                              + Score             Commit
+  Requirement        Routing +          Technical            Spec File       Quality Decision   Branch +
+    Brief            Tech Plugin          Context                              + Score             Commit
 ```
 
 **Documentation**:

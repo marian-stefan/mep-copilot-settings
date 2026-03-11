@@ -26,11 +26,10 @@ cp -r .github /path/to/your/repo/
 ### 2. Configure repo.config.json
 
 ```bash
-cd your-repo/.github/config
-cp repo.config.sample.json repo.config.json
+cp .github/config/repo.config.sample.json .github/config/repo.config.json
 ```
 
-Edit `repo.config.json`:
+Edit `.github/config/repo.config.json`:
 
 ```json
 {
@@ -77,16 +76,16 @@ FLAGS: --push (optional)
 
 ## What Happens
 
-The workflow automatically executes 6 steps:
+The workflow automatically executes these steps:
 
 | Step | Agent | Output | Time |
 | ------ | ------- | -------- | ------ |
-| 1 | **Analyst** | `BRIEF-{KEY}.md` | 2-5 min |
-| 2 | **Researcher** | `CONTEXT-{KEY}.md` | 5-10 min |
-| 3 | **Writer** | `SPEC-{KEY}-Plan.md` | 3-5 min |
-| 4 | **Generic Reviewer (+ review skill)** | Quality Report | 2-3 min |
+| 1 | **Jira Analyst** | `BRIEF-{KEY}.md` | 2-5 min |
+| *(Route + Resolve)* | *(Orchestrator internal)* | Routing + plugin decision | <1 min |
+| 2 | **Tech Researcher** | `CONTEXT-{KEY}.md` | 5-10 min |
+| 3 | **Specs Writer** | `SPEC-{KEY}-*.md` | 3-5 min |
+| 4 | **Generic Reviewer** (+ review skill) | Quality Report | 2-3 min |
 | 5 | **Git Operator** | Branch + Commit | 1-2 min |
-| 6 | **Orchestrator** | Summary | <1 min |
 
 **Total Time**: Typically 15-30 minutes
 
@@ -282,7 +281,7 @@ Check prerequisites:
 Possible causes:
 
 - Ticket is missing critical details (check `Open Questions` section)
-- Repository structure differs from config (update `repo.config.json`)
+- Repository structure differs from config (update `.github/config/repo.config.json`)
 - Tech Researcher couldn't analyze codebase (update ticket with context)
 
 **Action**: Update ticket, re-run workflow
@@ -330,7 +329,7 @@ For issues:
 
 1. Check `skills/specs-error-handling/SKILL.md` for error patterns
 2. Review `README.md` for configuration guidance
-3. Verify `config/repo.config.json` is correct for your repo
+3. Verify `.github/config/repo.config.json` is correct for your repo
 
 ---
 

@@ -1,9 +1,14 @@
 ---
 name: Tech Researcher
 description: Research the codebase and produce Technical Context for Story/Epic/Spike tickets (polymorphic, generic version)
-tools: ['read', 'edit', 'search', 'web', 'agent/runSubagent']
+tools: ['read', 'edit', 'search', 'web', 'agent']
 user-invocable: false
 disable-model-invocation: false
+handoffs:
+  - label: Return to Orchestrator
+    agent: Specs Workflow Orchestrator
+    prompt: "Technical Context complete. Continue workflow with Spec generation."
+    send: false
 ---
 
 # Tech Researcher Agent

@@ -2,6 +2,7 @@
 name: Specs Workflow Orchestrator
 description: Orchestrates the multi-agent Specs generation workflow from ticket to committed Spec file
 tools: ['agent', 'read/readFile', 'edit/createFile', 'edit/editFiles', 'mcp-atlassian/jira_get_issue']
+agents: ['Jira Analyst', 'Tech Researcher', 'Specs Writer', 'Generic Reviewer', 'Git Operator']
 user-invocable: true
 disable-model-invocation: false
 ---
