@@ -50,7 +50,7 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 4. Run the `create-specs` prompt or agent workflow
 5. Review the generated spec and begin implementation
 
-See [SPECS-WORKFLOW-GUIDE.md](SPECS-WORKFLOW-GUIDE.md) for detailed step-by-step instructions.
+See [SPECS-WORKFLOW-GUIDE.md](.github/SPECS-WORKFLOW-GUIDE.md) for detailed step-by-step instructions.
 
 ## Workflow Steps
 
