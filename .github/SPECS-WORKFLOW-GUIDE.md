@@ -136,6 +136,8 @@ Located at repository root. Final deliverable containing:
 
 **Action**: Commit to the feature branch, use as reference for implementation
 
+Recommended implementation entry point: run `/start-implementation` with the generated Spec attached. Include `CONTEXT-{KEY}.md` as supporting context if the implementation requires the lower-level technical plan.
+
 ### Git Branch Output
 
 ``` text
@@ -218,7 +220,16 @@ Check:
 
 ### 3. Begin Implementation
 
-Use the Technical Context (`CONTEXT-{KEY}.md`) as your implementation guide
+Use the generated Spec as the primary implementation handoff and the Technical Context as the detailed technical reference.
+
+```bash
+/start-implementation
+```
+
+Attach:
+
+- `SPEC-{KEY}-{Plan|Epic|Spike}.md` as the required source of truth
+- `CONTEXT-{KEY}.md` when additional file-level guidance is helpful
 
 - Exact file paths and line numbers identified
 - Before/after code snippets provided
@@ -330,6 +341,7 @@ For issues:
 1. Check `skills/specs-error-handling/SKILL.md` for error patterns
 2. Review `README.md` for configuration guidance
 3. Verify `.github/config/repo.config.json` is correct for your repo
+4. Use `.github/prompts/start-implementation.prompt.md` after spec approval to begin code changes from the generated spec
 
 ---
 

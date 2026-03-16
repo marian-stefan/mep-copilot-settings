@@ -27,7 +27,8 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 │   ├── review-dotnet/SKILL.md              # .NET review extension
 │   └── google-docs-extraction/SKILL.md
 ├── prompts/
-│   └── create-specs.prompt.md      # User entry point
+│   ├── create-specs.prompt.md      # User entry point for spec generation
+│   └── start-implementation.prompt.md # User entry point for implementation from spec
 ├── config/
 │   └── repo.config.sample.json     # Per-repo config template
 ├── README.md                       # This file
@@ -48,7 +49,7 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 2. Configure `.github/config/repo.config.json` for your repo
 3. Add a `.github/copilot-instructions.md` file if one doesn't exist yet — see [GitHub Copilot Instructions](https://code.visualstudio.com/docs/copilot/customization/custom-instructions) for reference
 4. Run the `create-specs` prompt or agent workflow
-5. Review the generated spec and begin implementation
+5. Review the generated spec, then run the `start-implementation` prompt with the spec attached
 
 See [SPECS-WORKFLOW-GUIDE.md](.github/SPECS-WORKFLOW-GUIDE.md) for detailed step-by-step instructions.
 
@@ -88,6 +89,14 @@ Create feature branch, commit spec, optionally push to remote.
 ```bash
 /create-specs TICKET-123
 ```
+
+### Implementation From Spec
+
+```bash
+/start-implementation
+```
+
+Attach the generated `SPEC-{TICKET_KEY}-{Plan|Epic|Spike}.md` file when invoking the prompt. Include `CONTEXT-{TICKET_KEY}.md` as supporting context when useful.
 
 ### Auto-push
 

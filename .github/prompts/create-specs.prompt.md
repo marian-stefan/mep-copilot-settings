@@ -48,6 +48,7 @@ The orchestrator coordinates a team of specialized agents to transform a ticket 
 **Documentation**:
 - Full workflow implementation: [specs-workflow-orchestrator.agent.md](../agents/specs-workflow-orchestrator.agent.md)
 - State machine & validation gates: [specs-workflow-state-machine/SKILL.md](../skills/specs-workflow-state-machine/SKILL.md)
+- Implementation handoff prompt: [start-implementation.prompt.md](./start-implementation.prompt.md)
 
 ## Flags & Options
 
@@ -68,6 +69,10 @@ Use this file for issue-type mapping and artifact naming instead of duplicating 
 ## Expected Output
 
 On successful completion, the orchestrator produces a summary with ticket info, branch name, spec filename, quality score, complexity, and risk level. See [specs-workflow-orchestrator.agent.md](../agents/specs-workflow-orchestrator.agent.md) for the full output format.
+
+## Next Step After Approval
+
+After reviewing the generated spec, run `/start-implementation` and attach the generated `SPEC-{TICKET_KEY}-{Plan|Epic|Spike}.md` file. Include `CONTEXT-{TICKET_KEY}.md` if the implementation needs the detailed technical plan.
 
 ## Error Handling
 
