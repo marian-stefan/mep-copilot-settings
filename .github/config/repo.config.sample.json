@@ -1,0 +1,19 @@
+{
+  "repoType": "dotnet|cpp|java|python|other",
+  "language": "C#|C++|Java|Python|TypeScript|etc",
+  "specOutputPath": "./docs/specs",
+  "ticketSource": "jira",
+  "notes": {
+    "pluginSelection": "Technology routing uses repoType and language first, then file heuristics.",
+    "supportedExamples": "repoType: angular|nx|frontend|dotnet|cpp|java|python|other"
+  },
+  "jiraConfig": {
+    "host": "https://jira.trimble.tools",
+    "projectKey": "YOUR_PROJECT"
+  },
+  "repositoryInfo": {
+    "name": "your-repo-name",
+    "language": "C#|C++|Java|Python|etc",
+    "description": "Brief description of repo purpose"
+  }
+}
