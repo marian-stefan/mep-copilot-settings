@@ -1,4 +1,9 @@
-# Generic Specs Workflow
+# Important
+
+The repository has been moved to [mep-copilot-settings](https://github.com/trimble-oss/mep-copilot-settings).
+The code remains available here for those who do not yet have a Trimble GitHub account.
+
+## Generic Specs Workflow
 
 A portable, repo-agnostic specs generation workflow for any technology stack.
 
