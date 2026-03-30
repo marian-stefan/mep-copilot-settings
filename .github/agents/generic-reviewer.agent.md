@@ -117,16 +117,6 @@ Scoring components:
 - `security`: number of security issues
 - `missing_tests`: count of public-surface changes without corresponding tests
 
-## Examples
-
-| Command              | Purpose        | Outcome                                                        |
-| -------------------- | -------------- | -------------------------------------------------------------- |
-| /review pr 4821      | Full PR review | Fetches metadata & diff, analyzes, outputs structured report   |
-| /review performance  | Perf audit     | Highlights rendering anti-patterns and heavy logic             |
-| /review security     | Security scan  | Flags unsafe patterns, potential secrets, sanitization issues  |
-| /review architecture | Layering check | Detects forbidden imports & coupling                           |
-| /commit              | Commit message | Generates structured conventional commit summary               |
-
 ---
 
 ## Generate Structured Review Output
