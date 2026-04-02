@@ -143,7 +143,7 @@ Workflow BLOCKED - cannot proceed to Git Operator.
 
 ## Workspace Policy References
 - See `.github/prompts/create-specs.prompt.md` for Specs workflow and standards.
-- See `.github/instructions/security.instructions.md` for security requirements.
+- See `.github/skills/specs-generation-core/SKILL.md` Section 5 for security requirements.
 - See `.github/skills/specs-technology-routing/SKILL.md` for plugin mapping.
 
 ## Context Files to Reference
@@ -153,7 +153,7 @@ Default references:
 
 - `.github/skills/specs-generation-core/SKILL.md` (core template)
 - `.github/skills/specs-technology-routing/SKILL.md` (plugin resolution)
-- `.github/instructions/security.instructions.md` (security standards)
+- `.github/skills/specs-generation-core/SKILL.md` Section 5 (security standards)
 
 ## Canonical References
 
@@ -188,7 +188,7 @@ Do not redefine section structures or scoring thresholds in this file; consume a
 
 5. **Avoid Duplication**: Reference instruction files instead of repeating architecture rules.
   - Use plugin extension guidance for stack-specific details.
-  - Link to `.github/instructions/security.instructions.md` for security.
+  - Link to `.github/skills/specs-generation-core/SKILL.md` Section 5 for security.
 
 6. **Apply Stack-Specific Patterns**: Use technology-specific patterns only when provided by the resolved plugin.
 

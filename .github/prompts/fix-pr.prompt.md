@@ -35,7 +35,7 @@ Analyze Bitbucket pull request feedback and automatically apply fixes to address
 
 - **Project**: `{replace_with_project_key}` (e.g., `MP`)
 - **Repository**: `{replace_with_repository_name}` (e.g., `mepworkspace`)
-- **Base URL**: `https://bitbucket.org/trimbleprojectmep/{replace_with_project_key}/{replace_with_repository_name}`
+- **Base URL**: `https://bitbucket.trimble.tools/trimbleprojectmep/{replace_with_project_key}/{replace_with_repository_name}`
 
 ## Workflow Overview
 
@@ -68,7 +68,7 @@ Request PR information from the user or via manual Bitbucket access:
 **User Prompt**:
 ```
 Please provide the PR details for PR #<PR_ID>:
-1. Link to the PR: https://bitbucket.org/trimbleprojectmep/{replace_with_project_key}/{replace_with_repository_name}/pull-requests/<PR_ID>
+1. Link to the PR: https://bitbucket.trimble.tools/trimbleprojectmep/{replace_with_project_key}/{replace_with_repository_name}/pull-requests/<PR_ID>
 2. Review comments (if any)
 3. CI/CD failures (if any)
 4. Any specific feedback to address
@@ -424,9 +424,7 @@ Check the error output above and address manually, or run with --dry-run to prev
 ## Related Documentation
 
 - [Reviewer Agent](../agents/generic-reviewer.agent.md)
-- [Architecture Patterns Skill](../skills/architecture-patterns/SKILL.md)
-- [Code Quality Patterns Skill](../skills/code-quality-patterns/SKILL.md)
-- [Security Practices Skill](../skills/security-practices/SKILL.md)
+- [Review Angular Skill](../skills/review-angular/SKILL.md)
+- [Review .NET Skill](../skills/review-dotnet/SKILL.md)
+- [Review PR Prompt](./review-pr.prompt.md)
 - [Review Branch Changes Prompt](./review-branch-changes.prompt.md)
-
-```

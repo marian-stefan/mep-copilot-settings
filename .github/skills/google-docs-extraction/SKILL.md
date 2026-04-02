@@ -73,13 +73,24 @@ Use this skill when you need to:
 ### Example 1: Extract Single Google Doc
 
 ```javascript
-const { extractDocument } = require('./.github/skills/google-docs-extraction/document-extractor.js');
-
 const env = {
   TRIMBLE_CLIENT_ID: process.env.TRIMBLE_CLIENT_ID,
   TRIMBLE_CLIENT_SECRET: process.env.TRIMBLE_CLIENT_SECRET,
   TRIMBLE_OAUTH_SCOPE: process.env.TRIMBLE_OAUTH_SCOPE
 };
+
+async function extractDocument(url, env) {
+  const encodedUrl = encodeURIComponent(url);
+  const response = await fetch(`${env.N8N_WEBHOOK_URL}?url=${encodedUrl}`, {
+    method: 'GET',
+    // Use a previously fetched OAuth token from TRIMBLE_OAUTH_ENDPOINT.
+    headers: { Authorization: `Bearer ${env.ACCESS_TOKEN}` }
+  });
+  if (!response.ok) {
+    throw new Error(`Extraction failed (${response.status})`);
+  }
+  return response.text();
+}
 
 const result = await extractDocument('https://docs.google.com/document/d/ABC123/edit', env);
 console.log('Extracted content:', result);

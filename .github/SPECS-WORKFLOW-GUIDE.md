@@ -34,7 +34,7 @@ Edit `.github/config/repo.config.json`:
 ```json
 {
   "repoType": "your-stack",              // Set to your stack identifier
-  "specOutputPath": "./docs/specs",  // Where specs are saved
+  "specOutputPath": "./docs/specs",  // Reserved for workflow variants; default workflow writes artifacts to repository root
   "ticketSource": "jira",            // jira or manual
   "jiraConfig": {
     "host": "https://your-jira.atlassian.net",
@@ -324,12 +324,11 @@ vi .github/config/repo.config.json  # Edit for your repo
 /create-specs MYPROJ-456
 
 # 3. Review artifacts
-cat ../BRIEF-MYPROJ-456.md
-cat ../CONTEXT-MYPROJ-456.md
-cat ../SPEC-MYPROJ-456-Plan.md
+cat BRIEF-MYPROJ-456.md
+cat CONTEXT-MYPROJ-456.md
+cat SPEC-MYPROJ-456-Plan.md
 
 # 4. Accept and push
-cd ..
 git checkout feature/MYPROJ-456
 git push origin feature/MYPROJ-456  # Or let workflow push with --push flag
 ```

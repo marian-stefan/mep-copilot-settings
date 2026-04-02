@@ -33,7 +33,12 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 │   └── google-docs-extraction/SKILL.md
 ├── prompts/
 │   ├── create-specs.prompt.md      # User entry point for spec generation
-│   └── start-implementation.prompt.md # User entry point for implementation from spec
+│   ├── start-implementation.prompt.md # User entry point for implementation from spec
+│   ├── review-pr.prompt.md
+│   ├── review-branch-changes.prompt.md
+│   ├── fix-pr.prompt.md
+│   ├── create-impact-map.prompt.md
+│   └── create-high-level-design.prompt.md
 ├── config/
 │   └── repo.config.sample.json     # Per-repo config template
 ├── README.md                       # This file
@@ -115,6 +120,83 @@ Attach the generated `SPEC-{TICKET_KEY}-{Plan|Epic|Spike}.md` file when invoking
 /create-specs TICKET-123 --dry-run
 ```
 
+## Architecture and Design Prompts
+
+The repository also includes two prompts for early architecture work:
+
+- `create-impact-map.prompt.md`
+- `create-high-level-design.prompt.md`
+
+For architecture work, the requirements source is the Jira Epic, and the prompts fetch that data directly through Jira Analyst.
+
+The recommended architecture flow is:
+
+1. Run `/create-impact-map <EPIC_KEY>`.
+2. The prompt uses Jira Analyst to fetch the Epic, acceptance criteria, and child issues.
+3. Run `/create-high-level-design <EPIC_KEY>`.
+4. The prompt reuses the same Epic context, reads the previously created `impact-map.md`, and generates the HLD and ADRs.
+
+### Recommended Flow
+
+| Step | Input | Output |
+| ------ | ------- | -------- |
+| 1. Create impact map | Jira Epic key via `/create-impact-map <EPIC_KEY>` | `<topic>/impact-map.md` |
+| 2. Create high-level design | Jira Epic key via `/create-high-level-design <EPIC_KEY>` | `<topic>/high-level-design.md` and `adrs.md` |
+
+Traceability stays linear: Jira Epic -> Jira Analyst output -> Impact Map -> High-Level Design.
+
+### How to Use `/create-impact-map`
+
+Run the prompt with the Jira Epic key:
+
+```bash
+/create-impact-map HON-1234
+```
+
+What it does:
+
+- Uses Jira Analyst to fetch Epic details, acceptance criteria, and child issues.
+- Uses Jira Epic data as the source of truth.
+- Creates a topic folder in the workspace root based on the Epic summary.
+- Writes `impact-map.md` into that folder.
+- Uses that folder as the shared output location for later architecture artifacts.
+
+Use this prompt when you want to turn Epic requirements into:
+
+- a clear requirement and acceptance criteria breakdown
+- affected modules, dependencies, and risks
+- explicit assumptions and scope boundaries
+
+### How to Use `/create-high-level-design`
+
+Run the prompt with the same Jira Epic key used for the impact map:
+
+```bash
+/create-high-level-design HON-1234
+```
+
+What it does:
+
+- Uses Jira Analyst to fetch Epic details for traceability.
+- Locates the existing `impact-map.md` from the prior `/create-impact-map` run.
+- Reads the impact map as the primary design input.
+- Saves `high-level-design.md` in the same folder as the impact map.
+- Creates `adrs.md` in that folder.
+- May use the bundled `adr` and `mermaid` skills to structure decisions and diagrams.
+
+Use this prompt when you want to produce:
+
+- major components and responsibilities
+- integrations and end-to-end flow
+- key architectural decisions with ADR traceability
+
+### Prompt Notes
+
+- The business source of truth and prompt input are both the Jira Epic key.
+- Both prompts rely on Jira Analyst to fetch Epic data and child issue context.
+- `/create-high-level-design` assumes `/create-impact-map` was already run for the same Epic key.
+- Supporting architecture skills live under `.github/skills/`, especially `adr`, `c4-diagrams`, and `mermaid`.
+
 ## Configuration
 
 Edit `.github/config/repo.config.json`:
@@ -135,6 +217,8 @@ Edit `.github/config/repo.config.json`:
   }
 }
 ```
+
+`specOutputPath` is reserved for workflow variants. The default Specs workflow currently writes generated artifacts to repository root.
 
 ## Output Artifacts
 

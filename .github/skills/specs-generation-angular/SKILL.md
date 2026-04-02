@@ -75,7 +75,7 @@ Use this skill only when the resolved technology plugin is `angular`.
 
 #### 4.1 Nx Library Structure
 
-> **Reference**: Follow library types, naming, and layering rules defined in `.github/skills/nx-patterns/SKILL.md`
+> **Reference**: Follow plugin routing and review constraints in `.github/skills/specs-technology-routing/SKILL.md` and `.github/skills/review-angular/SKILL.md`.
 
 **New Libraries to Create**:
 
@@ -97,7 +97,7 @@ Use this skill only when the resolved technology plugin is `angular`.
 
 #### 4.2 Component Architecture
 
-> **Reference**: Follow code patterns from `.github/copilot-instructions.md` for best practices
+> **Reference**: Follow core spec structure in `.github/skills/specs-generation-core/SKILL.md` and Angular review constraints in `.github/skills/review-angular/SKILL.md`.
 
 **Smart Components** (feature libs):
 
@@ -124,7 +124,7 @@ Use this skill only when the resolved technology plugin is `angular`.
 
 #### 4.3 State Management Strategy
 
-> **Reference**: State patterns in `.github/copilot-instructions.md`
+> **Reference**: Use state guidance from `.github/skills/review-angular/SKILL.md`.
 
 **NgRx Store** (for global/shared state):
 
@@ -725,7 +725,7 @@ it('should select {property}', () => {
 
 - All code snippets above are **examples** showing the pattern; actual field names, types, and logic come from the Technical Context.
 
-- Follow `.github/skills/nx-patterns/SKILL.md` for library structure and `.github/copilot-instructions.md` for Angular patterns.
+- Follow `.github/skills/specs-technology-routing/SKILL.md` for plugin resolution and `.github/skills/review-angular/SKILL.md` for Angular pattern checks.
 
 ---
 
