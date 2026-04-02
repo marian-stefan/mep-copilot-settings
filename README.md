@@ -3,9 +3,9 @@
 The repository has been moved to [mep-copilot-settings](https://github.com/trimble-oss/mep-copilot-settings).
 The code remains available here for those who do not yet have a Trimble GitHub account.
 
-## Generic Specs Workflow
+## Generic Engineering Workflow Toolkit
 
-A portable, repo-agnostic specs generation workflow for any technology stack.
+A portable, repo-agnostic workflow toolkit for spec generation, code review, unit test creation, and early architecture work across technology stacks.
 
 ## What's Included
 
@@ -17,7 +17,8 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 │   ├── specs-writer.agent.md
 │   ├── generic-reviewer.agent.md
 │   ├── specs-workflow-orchestrator.agent.md
-│   └── git-operator.agent.md
+│   ├── git-operator.agent.md
+│   └── unit-test-generator.agent.md
 ├── skills/                 # Domain knowledge modules
 │   ├── specs-workflow-routing/SKILL.md
 │   ├── specs-workflow-state-machine/SKILL.md
@@ -30,10 +31,14 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 │   ├── specs-generation-dotnet/SKILL.md    # .NET spec extension
 │   ├── review-angular/SKILL.md             # Angular review extension
 │   ├── review-dotnet/SKILL.md              # .NET review extension
+│   ├── unit-testing-core/SKILL.md
+│   ├── unit-testing-angular/SKILL.md
+│   ├── unit-testing-dotnet/SKILL.md
 │   └── google-docs-extraction/SKILL.md
 ├── prompts/
 │   ├── create-specs.prompt.md      # User entry point for spec generation
 │   ├── start-implementation.prompt.md # User entry point for implementation from spec
+│   ├── create-unit-tests.prompt.md # User entry point for unit test generation
 │   ├── review-pr.prompt.md
 │   ├── review-branch-changes.prompt.md
 │   ├── fix-pr.prompt.md
@@ -48,8 +53,9 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 ## Key Features
 
 ✅ **Ticket-to-Spec Automation**: Transform requirements tickets into implementation-ready specifications  
-✅ **Multi-Agent Orchestration**: Jira Analyst → Tech Researcher → Specs Writer → Generic Reviewer (+ review skill) → Git Operator  
-✅ **Quality Gates**: Automated validation and quality scoring  
+✅ **Diff-Aware Unit Test Creation**: Generate or update tests from current branch changes using local project conventions  
+✅ **Review Workflows**: Review Bitbucket pull requests or current branch changes with a shared reviewer workflow  
+✅ **Quality Gates**: Automated validation, review depth, and testing guidance through plugin-driven skills  
 ✅ **Git Integration**: Branch creation, commits, optional push  
 ✅ **Generic Core + Plugins**: Works with any repository structure; technology behavior is plugin-driven
 
@@ -58,12 +64,12 @@ A portable, repo-agnostic specs generation workflow for any technology stack.
 1. Copy `.github/` folder to your repository root
 2. Configure `.github/config/repo.config.json` for your repo
 3. Add a `.github/copilot-instructions.md` file if one doesn't exist yet — see [GitHub Copilot Instructions](https://code.visualstudio.com/docs/copilot/customization/custom-instructions) for reference
-4. Run the `create-specs` prompt or agent workflow
-5. Review the generated spec, then run the `start-implementation` prompt with the spec attached
+4. Run the prompt that matches your task: `create-specs`, `create-unit-tests`, `review-pr`, or `review-branch-changes`
+5. For implementation work, review the generated spec, then run the `start-implementation` prompt with the spec attached
 
 See [SPECS-WORKFLOW-GUIDE.md](.github/SPECS-WORKFLOW-GUIDE.md) for detailed step-by-step instructions.
 
-## Workflow Steps
+## Specs Workflow Steps
 
 ### 1. Analyze (Jira Analyst)
 
@@ -92,7 +98,45 @@ Technology-specific review depth is resolved from `.github/skills/specs-technolo
 
 Create feature branch, commit spec, optionally push to remote.
 
-## Usage
+## Additional Workflows
+
+### Unit Test Creation
+
+Use `/create-unit-tests` to generate or update tests for current branch changes.
+
+```bash
+/create-unit-tests
+/create-unit-tests main
+/create-unit-tests release/2026.04
+```
+
+What it does:
+
+- Uses `Unit Test Generator` to detect added, updated, or deleted functionality relative to a base branch.
+- Reuses local test style patterns and stack-specific unit-testing skills.
+- Updates, creates, or removes test files as needed for impacted source changes.
+- Runs validation commands for affected projects and reports coverage status.
+
+Use this prompt when you want to:
+
+- backfill tests for a feature branch
+- keep test suites aligned with source refactors
+- verify coverage impact before opening or merging a PR
+
+### Review Workflows
+
+Use the review prompts for code review tasks outside the Specs flow:
+
+```bash
+/review pr 4821
+/review-branch-changes
+```
+
+- `review-pr.prompt.md` reviews a Bitbucket pull request by PR ID.
+- `review-branch-changes.prompt.md` reviews local branch differences versus `develop`.
+- Both rely on `Generic Reviewer` as the canonical review workflow.
+
+## Specs Workflow Usage
 
 ### Basic
 
@@ -262,6 +306,8 @@ The workflow is fully technology-agnostic. To tailor it for your stack:
 - **Angular Extension Template**: `skills/specs-generation-angular/SKILL.md`
 - **Technology Routing**: `skills/specs-technology-routing/SKILL.md`
 - **Agent Invocation**: `skills/specs-subagent-invocation/SKILL.md`
+- **Unit Testing Baseline**: `instructions/testing.instructions.md`
+- **Unit Testing Core Skill**: `skills/unit-testing-core/SKILL.md`
 
 ## Support & Maintenance
 
