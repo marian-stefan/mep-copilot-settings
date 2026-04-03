@@ -1,6 +1,6 @@
 ---
 agent: 'Specs Workflow Orchestrator'
-tools: ['agent', 'read/readFile', 'edit/createFile', 'mcp-atlassian/jira_get_issue']
+tools: ['agent', 'read/readFile', 'edit/createFile', 'mcp-atlassian/jira_get_issue', 'execute']
 description: 'Generate implementation-ready Specs from tickets using the multi-agent orchestrator'
 ---
 

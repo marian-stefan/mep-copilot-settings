@@ -1,6 +1,6 @@
 ---
 agent: 'Generic Reviewer'
-tools: ['read', 'edit', 'search', 'agent', 'bitbucket/*']
+tools: ['read', 'edit', 'search', 'agent', 'bitbucket/*', 'execute']
 description: 'Analyze and fix pull request feedback based on PR ID from Bitbucket'
 argument-hint: '<PR_ID> [--dry-run] [--skip-tests]'
 ---

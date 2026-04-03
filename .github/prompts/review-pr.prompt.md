@@ -1,6 +1,6 @@
 ---
 agent: 'Generic Reviewer'
-tools: ['read', 'search', 'bitbucket/*']
+tools: ['read', 'search', 'bitbucket/*', 'execute']
 description: 'Comprehensive review of a pull request from Bitbucket using PR ID'
 argument-hint: '<PR_ID>'
 ---

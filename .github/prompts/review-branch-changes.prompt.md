@@ -1,6 +1,6 @@
 ---
 agent: 'Generic Reviewer'
-tools: ['vscode/runCommand', 'read', 'search', 'gitkraken/*', 'agent', 'bitbucket/*']
+tools: ['vscode/runCommand', 'read', 'search', 'gitkraken/*', 'agent', 'bitbucket/*', 'execute']
 description: 'Guide for reviewing current branch changes versus develop'
 ---
 
