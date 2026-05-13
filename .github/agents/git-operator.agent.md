@@ -4,11 +4,7 @@ description: Safely manage branch creation, commits and pushes for agent-generat
 tools: ['vscode/runCommand', 'execute/getTerminalOutput', 'execute/createAndRunTask', 'execute/runInTerminal', 'read/terminalSelection', 'read/terminalLastCommand', 'read/readFile', 'agent']
 user-invocable: true
 disable-model-invocation: false
-handoffs:
-  - label: Return to Orchestrator
-    agent: Specs Workflow Orchestrator
-    prompt: "Git operations complete. Continue workflow with final summary."
-    send: false
+handoffs: []
 ---
 
 ## Purpose & Persona
@@ -21,16 +17,18 @@ Branch management, commit conventions, pushing code, error handling.
 Operates over: Git repository, Ticket ID, Files to commit.
 
 ## Inputs/Outputs
-- Inputs: Ticket ID, files to commit, commit context.
+- Inputs:
+  - `jiraKey`: Ticket ID (e.g., `TICKET-123`).
+  - `issueType`: Issue type (`Story`, `Task`, `Bug`, `Epic`, `Spike`). Used for branch name derivation.
+  - `files`: Explicit list of files created/modified during the implementation session.
+  - `specTitle`: Title from the spec file frontmatter, used in the commit message.
 - Outputs: Branch name, commit hash, branch URL.
 
 ## Core Workflow
 1. Input Analysis:
-    - Receive Ticket ID (e.g., `{JIRA_KEY}`).
-    - Receive File(s) to commit (e.g., `SPEC-{JIRA_KEY}-Plan.md`).
-    - Receive Context for commit message.
+    - Receive `jiraKey` (e.g., `TICKET-123`), `issueType`, `files` (list of implementation files tracked during the session), and `specTitle` (from spec frontmatter).
 2. Pre-flight Checks:
-    - Verify working tree status: abort if there are unrelated unstaged or staged changes.
+    - Run `git status --porcelain` and compare against the provided `files` list. If dirty files outside the list are found, **warn the user** with the full list of unrelated files and **ask whether to proceed or abort** before staging anything.
     - Run `git fetch --all --prune` to get latest refs.
     - Determine default branch (prefer `develop`, fallback to `main`/`master`).
     Example checks (conceptual):
@@ -55,12 +53,13 @@ Operates over: Git repository, Ticket ID, Files to commit.
     ```
     - If the branch already exists remotely, check it out and rebase/merge latest from `develop` depending on repo policy (do NOT force-push).
 4. Commit & Push:
-    - Stage only the specified file(s): `git add SPEC-{JIRA_KEY}-Plan.md`.
-    - Commit using Conventional Commit format:
+    - Stage only the files from the provided `files` list (no others): `git add <file1> <file2> ...`.
+    - Commit using Conventional Commit format with `specTitle`:
     ```bash
-    git commit -m "docs({JIRA_KEY}): Add AI-generated Specs"
+    git commit -m "feat({JIRA_KEY}): {specTitle}"
     git push --set-upstream origin feature/{JIRA_KEY}
     ```
+    - Use `fix` instead of `feat` when `issueType` is `Bug`.
     - Respect `pushPolicy`: if `local-only`, skip `git push` and report the local branch name and commit hash. If `confirm`, do not push until confirmation is received.
 5. Output:
     - Return the branch name and commit hash (short SHA).
@@ -89,8 +88,8 @@ Operates over: Git repository, Ticket ID, Files to commit.
 
 ## Error Handling & Rules
 - NEVER force push.
-- ALWAYS use Conventional Commits.
-- If working tree contains unrelated changes, abort and report which files caused the abort.
+- ALWAYS use Conventional Commits. Commit message format: `feat({KEY}): {specTitle}`. Use `fix` instead of `feat` when `issueType` is `Bug`.
+- If working tree contains files outside the provided `files` list, warn the user with the full list and ask whether to proceed (staging only the listed files) or abort entirely.
 - If push fails due to conflicts, abort and provide human-readable remediation steps (fetch + rebase, resolve conflicts, push).
 - If remote operations fail due to auth or network, surface the exact git error and suggested manual commands.
 - Do not commit unrelated files.
@@ -113,4 +112,4 @@ Operates over: Git repository, Ticket ID, Files to commit.
   ```
 
 ## Workspace Policy References
-- See `.github/prompts/create-specs.prompt.md` for commit/branch conventions.
+- See `.github/skills/specs-workflow-routing/SKILL.md` for branch prefix and artifact naming conventions.

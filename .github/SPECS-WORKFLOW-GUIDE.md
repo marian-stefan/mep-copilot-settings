@@ -34,7 +34,7 @@ Edit `.github/config/repo.config.json`:
 ```json
 {
   "repoType": "your-stack",              // Set to your stack identifier
-  "specOutputPath": "./docs/specs",  // Reserved for workflow variants; default workflow writes artifacts to repository root
+  "specOutputPath": "./docs/specs",  // Artifact output path
   "ticketSource": "jira",            // jira or manual
   "jiraConfig": {
     "host": "https://your-jira.atlassian.net",
@@ -59,9 +59,8 @@ Edit `.github/config/repo.config.json`:
 **Examples:**
 
 ```bash
-/create-specs PROJ-123              # Standard: generates spec locally
-/create-specs PROJ-123 --push       # Auto-push: skips confirmation
-/create-specs PROJ-123 --dry-run    # Dry-run: no git operations
+/create-specs PROJ-123                     # Standard: generates and validates spec locally
+/create-specs PROJ-123 --create-children   # Epic: include child ticket suggestions
 ```
 
 ### Method 2: Using the Agent Directly
@@ -80,14 +79,13 @@ The workflow automatically executes these steps:
 
 | Step | Agent | Output | Time |
 | ------ | ------- | -------- | ------ |
-| 1 | **Jira Analyst** | `BRIEF-{KEY}.md` | 2-5 min |
+| 1 | **Jira Analyst** | `docs/specs/{KEY}/BRIEF-{KEY}.md` | 2-5 min |
 | *(Route + Resolve)* | *(Orchestrator internal)* | Routing + plugin decision | <1 min |
-| 2 | **Tech Researcher** | `CONTEXT-{KEY}.md` | 5-10 min |
-| 3 | **Specs Writer** | `SPEC-{KEY}-*.md` | 3-5 min |
+| 2 | **Tech Researcher** | `docs/specs/{KEY}/CONTEXT-{KEY}.md` | 5-10 min |
+| 3 | **Specs Writer** | `docs/specs/{KEY}/SPEC-{KEY}-*.md` | 3-5 min |
 | 4 | **Generic Reviewer** (+ review skill) | Quality Report | 2-3 min |
-| 5 | **Git Operator** | Branch + Commit | 1-2 min |
 
-**Total Time**: Typically 15-30 minutes
+**Total Time**: Typically 15-25 minutes
 
 Technology plugin resolution occurs before validation and selects:
 
@@ -98,9 +96,9 @@ Fallback behavior: if no plugin matches, `Generic Reviewer` runs without extra r
 
 ## Understanding the Output
 
-### Requirement Brief (`BRIEF-{KEY}.md`)
+### Requirement Brief (`docs/specs/{KEY}/BRIEF-{KEY}.md`)
 
-Located at repository root. Contains:
+Contains:
 
 - Problem statement
 - User stories
@@ -110,9 +108,9 @@ Located at repository root. Contains:
 
 **Action**: Review for accuracy, update ticket if gaps exist
 
-### Technical Context (`CONTEXT-{KEY}.md`)
+### Technical Context (`docs/specs/{KEY}/CONTEXT-{KEY}.md`)
 
-Located at repository root. Contains:
+Contains:
 
 - Affected files with path and line numbers
 - Before/after code snippets
@@ -122,9 +120,9 @@ Located at repository root. Contains:
 
 **Action**: Review for completeness, technical accuracy
 
-### Specification (`SPEC-{KEY}-Plan.md`)
+### Specification (`docs/specs/{KEY}/SPEC-{KEY}-Plan.md`)
 
-Located at repository root. Final deliverable containing:
+Final deliverable containing:
 
 - Overview
 - Requirements (functional & non-functional)
@@ -134,22 +132,19 @@ Located at repository root. Final deliverable containing:
 - Testing approach
 - Risks & mitigation
 
-**Action**: Commit to the feature branch, use as reference for implementation
+**Action**: Use as reference for implementation — run `/start-implementation` with the spec attached.
 
-Recommended implementation entry point: run `/start-implementation` with the generated Spec attached. Include `CONTEXT-{KEY}.md` as supporting context if the implementation requires the lower-level technical plan.
+Recommended implementation entry point: run `/start-implementation` with the generated Spec attached. Include `docs/specs/{KEY}/CONTEXT-{KEY}.md` as supporting context if the implementation requires the lower-level technical plan.
 
 ### Git Branch Output
 
+After running `/start-implementation` and confirming commit:
+
 ``` text
-✅ Spec Generation Complete
-
-Ticket: PROJ-123
-Branch: feature/PROJ-123
-Spec File: SPEC-PROJ-123-Plan.md
-Quality Score: 85/100
+Branch created: feature/{KEY}
+Commit: 1a2b3c4
+URL: https://github.com/{owner}/{repo}/tree/feature/{KEY}
 ```
-
-**Branch URL**: Provided in output (if available)
 
 ## Error Recovery
 
@@ -202,7 +197,7 @@ Remediation:
 
 ```bash
 # In your IDE or editor:
-cat SPEC-{KEY}-Plan.md
+cat docs/specs/{KEY}/SPEC-{KEY}-Plan.md
 ```
 
 Check:
@@ -228,23 +223,10 @@ Use the generated Spec as the primary implementation handoff and the Technical C
 
 Attach:
 
-- `SPEC-{KEY}-{Plan|Epic|Spike}.md` as the required source of truth
-- `CONTEXT-{KEY}.md` when additional file-level guidance is helpful
+- `docs/specs/{KEY}/SPEC-{KEY}-{Plan|Epic|Spike}.md` as the required source of truth
+- `docs/specs/{KEY}/CONTEXT-{KEY}.md` when additional file-level guidance is helpful
 
-- Exact file paths and line numbers identified
-- Before/after code snippets provided
-- Step-by-step plan ready to follow
-
-### 4. Push and Merge
-
-If you used `--dry-run`:
-
-```bash
-git checkout feature/{KEY}
-git push origin feature/{KEY}
-```
-
-Create PR/merge request in your Git host.
+The prompt will guide you through the implementation, verify tests pass, and confirm a commit with the Git Operator before pushing.
 
 ## Advanced Usage
 
@@ -253,28 +235,10 @@ Create PR/merge request in your Git host.
 For epics with child tickets:
 
 ```bash
-/create-specs PROJ-100        # Epic (generates parent spec)
-/create-specs PROJ-101 --push # Child 1
-/create-specs PROJ-102 --push # Child 2
+/create-specs PROJ-100                    # Epic (generates parent spec)
+/create-specs PROJ-101                    # Child 1
+/create-specs PROJ-102 --create-children  # Child 2 with child ticket suggestions
 ```
-
-### Skip Confirmation Prompts
-
-```bash
-/create-specs PROJ-123 --push --dry-run
-# Generates locally AND automatically pushes (if not dry-run)
-```
-
-### Dry-Run Without Git Operations
-
-```bash
-/create-specs PROJ-123 --dry-run
-# Generates BRIEF, CONTEXT, SPEC files
-# No branch created
-# No git push
-```
-
-Review artifacts locally, then manually commit if satisfied.
 
 ## Troubleshooting
 
@@ -324,13 +288,14 @@ vi .github/config/repo.config.json  # Edit for your repo
 /create-specs MYPROJ-456
 
 # 3. Review artifacts
-cat BRIEF-MYPROJ-456.md
-cat CONTEXT-MYPROJ-456.md
-cat SPEC-MYPROJ-456-Plan.md
+cat docs/specs/MYPROJ-456/BRIEF-MYPROJ-456.md
+cat docs/specs/MYPROJ-456/CONTEXT-MYPROJ-456.md
+cat docs/specs/MYPROJ-456/SPEC-MYPROJ-456-Plan.md
 
-# 4. Accept and push
-git checkout feature/MYPROJ-456
-git push origin feature/MYPROJ-456  # Or let workflow push with --push flag
+# 4. Implement and commit
+/start-implementation
+# Attach: docs/specs/MYPROJ-456/SPEC-MYPROJ-456-Plan.md
+# Type "commit" when prompted to stage and push via Git Operator
 ```
 
 ## Support
@@ -347,6 +312,7 @@ For issues:
 **Need help?** Consult:
 
 - `README.md` - Overview and features
-- `skills/specs-validation/SKILL.md` - Quality gates
+- `skills/specs-validation/SKILL.md` - Technical Context quality gates
+- `skills/specs-quality-review/SKILL.md` - Spec document quality gates and scoring
 - `skills/specs-error-handling/SKILL.md` - Error types and recovery
 - `agents/tech-researcher.agent.md` - How research works

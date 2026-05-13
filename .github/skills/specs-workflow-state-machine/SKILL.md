@@ -67,18 +67,10 @@ stateDiagram-v2
         DecideTransition --> [*]
     }
 
-    VALIDATE --> COMMIT: proceed
+    VALIDATE --> COMPLETE: proceed
     VALIDATE --> GENERATE: iterate (within limit)
     VALIDATE --> ERROR_VALIDATE: abort
 
-    state COMMIT {
-        [*] --> RunPreCommitGuards
-        RunPreCommitGuards --> InvokeGitOperator
-        RunPreCommitGuards --> ERROR_COMMIT
-        InvokeGitOperator --> [*]
-    }
-
-    COMMIT --> COMPLETE
     COMPLETE --> [*]: Success
 ```
 

@@ -1,11 +1,13 @@
 ---
 name: specs-validation
-description: Centralized validation gates and scoring rules for the Specs workflow (Technical Context and Spec quality).
+description: Centralized validation gates for the Specs workflow (Technical Context only). Spec quality scoring is owned by specs-quality-review/SKILL.md.
 ---
+
+> **Scope Notice:** This skill's authority is **limited to Technical Context validation** (RESEARCH step gates and validation summary format). It does **not** own Spec document quality scoring or quality-bucket thresholds. Those are exclusively defined in [specs-quality-review/SKILL.md](../specs-quality-review/SKILL.md). Agents and orchestrators must consult that file for `qualityScore` calculation, `qualityBucket` thresholds, and Spec review output format.
 
 # Specs Validation Gates
 
-This skill is the single source of truth for validation logic across the Specs workflow. Agents and the orchestrator must reference this document instead of duplicating gate definitions.
+This skill covers Technical Context validation logic for the Specs workflow. Agents and the orchestrator must reference this document for RESEARCH-step gate decisions.
 
 ## Scope
 
@@ -17,7 +19,7 @@ This skill is the single source of truth for validation logic across the Specs w
 
 ### Critical Gates (MUST PASS - blocking)
 
-- File `CONTEXT-{JIRA_KEY}.md` exists in repository root (no subdirectories)
+- File `docs/specs/{TICKET_KEY}/CONTEXT-{TICKET_KEY}.md` exists at the expected output path
 - File size > 1KB (substantive analysis)
 - Contains at least 2 concrete file paths with no `{placeholder}` syntax
 
@@ -56,9 +58,9 @@ Return a validation summary block in Technical Context output:
 
 **Status**: PASSED | PASSED_WITH_WARNINGS | REJECTED
 
-**Critical Gates**: {x}/4 passed
-**Important Gates**: {x}/5 passed
-**Optional Gates**: {x}/6 passed
+**Critical Gates**: {x}/3 passed
+**Important Gates**: {x}/4 passed
+**Optional Gates**: {x}/3 passed
 
 **Failed Critical Gates**:
 - {gate}
@@ -69,5 +71,5 @@ Return a validation summary block in Technical Context output:
 
 ## Spec Quality Validation (Reviewer)
 
-Spec quality scoring remains owned by `Generic Reviewer`.
-Stack-specific review depth is determined by `.github/skills/specs-technology-routing/SKILL.md`, which may resolve an optional `reviewSkill` for `Generic Reviewer` to load.
+Spec quality scoring is owned by [specs-quality-review/SKILL.md](../specs-quality-review/SKILL.md). Agents must not duplicate gate definitions or scoring here.
+Stack-specific review depth is determined by `.github/skills/specs-technology-routing/SKILL.md`, which may resolve an optional `reviewSkill` for `Generic Reviewer` to load alongside `specs-quality-review/SKILL.md`.

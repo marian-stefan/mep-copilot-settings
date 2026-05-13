@@ -1,12 +1,8 @@
 {
   "servers": {
-    "bitbucket": {
-        "type": "http",
-        "url": "https://dev-mcpbitbucket.mepdevelopment.net/mcp"
-    },
-    "mcp-atlassian": {
+    "eTools": {
       "type": "http",
-      "url": "https://dev-mcpatlassianjira.mepdevelopment.net/mcp"
+      "url": "https://mcp.trimble.tools/mcp"
     }
   }
 }

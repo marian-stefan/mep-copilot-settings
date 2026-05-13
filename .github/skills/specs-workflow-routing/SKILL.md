@@ -38,6 +38,6 @@ Both `tech-researcher` and `specs-writer` are polymorphic and auto-adapt to issu
 
 ## Policy
 
-- Files are created in repository root unless a workflow variant explicitly overrides this.
+- Artifacts are created under `docs/specs/{TICKET_KEY}/` (matching `specOutputPath` in `.github/config/repo.config.json`).
 - Orchestrator, writer, prompts, and helper docs should reference this skill instead of duplicating mapping tables.
 - If mappings change, update this skill first.

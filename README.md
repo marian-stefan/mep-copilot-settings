@@ -23,6 +23,7 @@ A portable, repo-agnostic workflow toolkit for spec generation, code review, uni
 │   ├── specs-workflow-routing/SKILL.md
 │   ├── specs-workflow-state-machine/SKILL.md
 │   ├── specs-validation/SKILL.md
+│   ├── specs-quality-review/SKILL.md
 │   ├── specs-error-handling/SKILL.md
 │   ├── specs-subagent-invocation/SKILL.md
 │   ├── specs-generation-core/SKILL.md
@@ -56,7 +57,7 @@ A portable, repo-agnostic workflow toolkit for spec generation, code review, uni
 ✅ **Diff-Aware Unit Test Creation**: Generate or update tests from current branch changes using local project conventions  
 ✅ **Review Workflows**: Review Bitbucket pull requests or current branch changes with a shared reviewer workflow  
 ✅ **Quality Gates**: Automated validation, review depth, and testing guidance through plugin-driven skills  
-✅ **Git Integration**: Branch creation, commits, optional push  
+✅ **Git Integration**: Branch creation, commits, push (via `start-implementation` → Git Operator)  
 ✅ **Generic Core + Plugins**: Works with any repository structure; technology behavior is plugin-driven
 
 ## Quick Start
@@ -93,10 +94,11 @@ Check completeness, quality, and coverage.
 
 Validation always uses `Generic Reviewer`.
 Technology-specific review depth is resolved from `.github/skills/specs-technology-routing/SKILL.md` via an optional review skill.
+Quality scoring and bucket thresholds are defined in `.github/skills/specs-quality-review/SKILL.md`.
 
-### 6. Commit (Git Operator)
+### 6. Complete
 
-Create feature branch, commit spec, optionally push to remote.
+Produces a summary with ticket info, spec file path, quality score, complexity, and risk level. Artifacts are committed during implementation via `start-implementation`.
 
 ## Additional Workflows
 
@@ -144,25 +146,19 @@ Use the review prompts for code review tasks outside the Specs flow:
 /create-specs TICKET-123
 ```
 
+### Epics with child ticket suggestions
+
+```bash
+/create-specs TICKET-123 --create-children
+```
+
 ### Implementation From Spec
 
 ```bash
 /start-implementation
 ```
 
-Attach the generated `SPEC-{TICKET_KEY}-{Plan|Epic|Spike}.md` file when invoking the prompt. Include `CONTEXT-{TICKET_KEY}.md` as supporting context when useful.
-
-### Auto-push
-
-```bash
-/create-specs TICKET-123 --push
-```
-
-### Dry-run (local only)
-
-```bash
-/create-specs TICKET-123 --dry-run
-```
+Attach the generated `docs/specs/{TICKET_KEY}/SPEC-{TICKET_KEY}-{Plan|Epic|Spike}.md` file when invoking the prompt. Include `docs/specs/{TICKET_KEY}/CONTEXT-{TICKET_KEY}.md` as supporting context when useful. The prompt will guide you through implementation and handle the git commit via Git Operator.
 
 ## Architecture and Design Prompts
 
