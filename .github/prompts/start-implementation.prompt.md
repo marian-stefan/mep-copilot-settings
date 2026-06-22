@@ -1,62 +1,86 @@
 ---
-agent: 'agent'
-tools: ['execute', 'read', 'agent', 'edit', 'search', 'browser']
-description: 'Implement the solution defined in the provided specification file, ensuring strict adherence to the existing codebase, architecture, and repository configurations.'
+agent: 'Implementation Workflow Orchestrator'
+tools: ['agent', 'read/readFile', 'edit/createFile', 'edit/editFiles', 'search/textSearch', 'search/fileSearch', 'execute']
+description: 'Implement the solution defined in a validated Spec document, with pre-flight quality check, local review, spec accuracy signal, and guided commit.'
 ---
 
-# Role: Senior Software Engineer
-# Task: Implementation from Specification
+# Start Implementation
 
-Act as a Senior Software Engineer. Use the attached specs file as the **absolute source of truth** for implementation logic, environment context, and architectural constraints.
+Implement the solution defined in the attached Spec document using the **Implementation Workflow Orchestrator**.
 
----
+## Command Usage
 
-### 1. Pre-Implementation Validation
-- **Repo Analysis:** Before writing code, validate the implementation plan in the spec against the existing code in the repository.
-- **Strict Consistency:** Ensure the plan adheres to the existing tech stack, naming conventions, and patterns found in the repo.
-- **Conflict Resolution:** If the spec's plan is insufficient, contradicts the existing architecture, or misses a superior existing utility, **stop.** Ask for clarification or propose an alternative that fits the current system.
-- **Baseline Snapshot:** Run `git status --porcelain` and record the output. This establishes the pre-implementation baseline used in Section 4 to isolate only the files you changed.
+Attach the spec file to this conversation or provide the Jira key:
 
-### 2. Controlled Implementation
-- **Location Intelligence:** Determine the appropriate file(s) for implementation based on the repository's structure and the details in the spec. Create new files or modify existing ones as needed.
-- **File Tracking:** Maintain a running list of every file you create or modify during this section. This list is passed to the Git Operator in Section 4. **Do NOT include the spec file itself** -- only source, test, and config files produced by the implementation.
-- **Technology Lockdown:** Use ONLY the languages, frameworks, and library versions already established in the repository settings. Do not introduce new dependencies.
-- **Config Adherence:** Follow all repository configurations exactly. The code must pass all existing linting and formatting rules.
-- **Zero Hallucinations:** Implement exactly what is defined. If a dependency or internal utility is missing from both the spec and the repo, do not invent it--ask for the correct location.
+```
+/start-implementation
+/start-implementation HON-123
+```
 
-### 3. Verification & Definition of Done
-- **Test Generation:** Create a comprehensive test suite using the repository's existing testing framework, matching the style and structure of current tests.
-- **Execution:** Run the tests via the `@terminal`.
-- **Success Criteria:** The task is complete ONLY when:
-    1. The code is fully functional per the spec.
-    2. It passes **100%** of the generated tests.
-    3. It matches all repository-defined style and configuration rules.
+When a Jira key is provided, the orchestrator auto-resolves the spec path as `docs/specs/{JIRA_KEY}/SPEC-{JIRA_KEY}*.md` — no manual attachment needed.
 
-### 4. Git Commit
+The spec file must be located at `docs/specs/{JIRA_KEY}/SPEC-{JIRA_KEY}[.md|-Epic.md|-Spike.md]`.
 
-> **PAUSE** -- Once Section 3 criteria are met, present the file list below to the user and wait for explicit confirmation before invoking the Git Operator. Do **not** stage or commit anything until the user confirms.
+## Workflow Overview
 
-Once all Section 3 criteria are met, display the following to the user and **wait for a response before proceeding**:
+The orchestrator runs a structured PREFLIGHT → IMPLEMENT → REVIEW → COMMIT pipeline:
 
----
-**Ready to commit. Please review the files that will be staged:**
+```
+┌─────────────┐    ┌─────────────┐    ┌─────────────┐    ┌─────────────┐
+│  PREFLIGHT  │───▶│  IMPLEMENT  │───▶│   REVIEW    │───▶│   COMMIT    │
+│             │    │             │    │             │    │             │
+│ Spec quality│    │ Code + tests│    │ Code        │    │ Git Operator│
+│ check +     │    │ 100%        │    │ Reviewer    │    │ + spec      │
+│ git baseline│    │ coverage    │    │ (local)     │    │ accuracy    │
+└─────────────┘    └─────────────┘    └─────────────┘    └─────────────┘
+```
 
-[list every file from the running list maintained in Section 2, filtered per the rules below]
-
-Type **"commit"** to proceed with staging and committing, or **"skip"** to defer and leave changes unstaged.
+**Documentation**: [implementation-workflow-orchestrator.agent.md](../agents/implementation-workflow-orchestrator.agent.md)
 
 ---
 
-- **File List:** Use the running list maintained in Section 2. Cross-check against `git status --porcelain` output and exclude any files that were already dirty in the Section 1 baseline snapshot, and exclude the spec file itself. The final list must contain **only implementation files from this session** (source, tests, config -- no spec docs).
-- **Spec Metadata:** Extract the following fields directly from the frontmatter of the attached spec file:
-  - `issueKey` -- the ticket key (e.g., `TICKET-123`)
-  - `issueType` -- the issue type (e.g., `Story`, `Task`, `Bug`)
-  - `title` -- the spec title used in the commit message. If `title` is absent from the frontmatter, fall back to the spec file's first H1 heading (`# ...`).
-- **Invoke Git Operator** (only after user confirms with "commit"): Hand off to the **Git Operator** agent with:
-  - `jiraKey`: value of `issueKey` from the spec frontmatter
-  - `issueType`: value of `issueType` from the spec frontmatter
-  - `files`: the filtered file list from this section
-  - `specTitle`: value of `title` from the spec frontmatter
+## Implementation Rules
+
+The orchestrator's IMPLEMENT step is governed by the canonical rules in:
+
+- [implementation-rules/SKILL.md](../skills/implementation-rules/SKILL.md) — Pre-implementation validation, controlled implementation, definition of done
+
+This skill is the single source of truth. Any change to implementation behavior must be made there first.
 
 ---
-**Next Step:** Please confirm you have analyzed the repo and the spec file. List the files you intend to create or modify and any potential architectural conflicts before beginning.
+
+## Lessons System
+
+The implementation orchestrator maintains a lessons system to surface prior corrections at the start of each run and capture new ones as they occur.
+
+### Lesson Files
+
+| File | Scope |
+|------|-------|
+| `.github/lessons.md` | Cross-cutting: shared lib patterns, architecture rules, testing patterns |
+| `{{MODULE_LESSONS_PATH}}` | Module-scoped: corrections specific to one app or module (resolved by tech layer) |
+
+Files are created on demand — the orchestrator writes them if absent, appends if present. No pre-created lessons files are needed.
+
+### How It Works
+
+- **At PREFLIGHT**: The orchestrator reads `.github/lessons.md` and the module-scoped file (if inferable from SPEC predicted files). Relevant lessons are surfaced as context in the IMPLEMENT step.
+- **During IMPLEMENT**: After each review iteration with accepted fixes, the orchestrator evaluates whether a confirmed correction event occurred and appends a lesson before re-entering IMPLEMENT.
+- **On explicit user correction**: The lesson is captured immediately, before the next agent step.
+
+### Lesson Format
+
+`[Situation]: [Mistake made or pattern observed] → [Rule to apply next time]`
+
+See [implementation-workflow-orchestrator.agent.md](../agents/implementation-workflow-orchestrator.agent.md) for the full confirmed correction event definition and capture hook locations.
+
+---
+
+## Workspace Policy References
+
+- [implementation-rules/SKILL.md](../skills/implementation-rules/SKILL.md) — Canonical implementation rules (single source of truth)
+- [implementation-workflow-orchestrator.agent.md](../agents/implementation-workflow-orchestrator.agent.md) — Orchestrator implementation, state schema, and agent contracts
+- [testing.instructions.md](../instructions/testing.instructions.md) — Test conventions and 100% coverage mandate
+- tech-layer `{stack}-patterns/SKILL.md` — codebase layering and naming conventions (provided by your tech layer)
+- [security.instructions.md](../instructions/security.instructions.md) — Security rules
+- [specs-error-handling/SKILL.md](../skills/specs-error-handling/SKILL.md) — Error taxonomy

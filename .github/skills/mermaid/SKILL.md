@@ -49,6 +49,20 @@ argument-hint: "describe the diagram to generate or reference a design document"
 
 **Do NOT use `-.)` — it is invalid Mermaid syntax and causes parse errors.**
 
+## Pre-Write Validation
+
+Before writing any Mermaid diagram to a file, run this checklist:
+
+1. **Unclosed brackets**: Scan all node labels for `[` without a matching `]`. If any are found, close them before writing.
+2. **Special characters in labels**: Escape or quote `"` and `:` characters inside node labels. In `graph`/`flowchart`, wrap labels containing these characters with `"..."` or use the `["..."]` node syntax.
+3. **Arrow syntax**: Verify all arrows against the arrow reference table above. In particular:
+   - `-.)` is invalid — use `-.->` or `--)` depending on intent.
+   - `-->` is valid for solid lines with arrowheads; `-.->` for dotted with arrowhead.
+   - In `sequenceDiagram`, use only the sequence-specific arrows from the arrow reference table.
+4. **Complexity fallback**: If the diagram would exceed ~20 nodes, do NOT attempt to render it as Mermaid. Instead, write a text outline with the heading `<!-- Diagram available on request — exceeds 20-node rendering threshold -->` followed by a plain-text representation.
+
+If any check fails, fix the issue before writing. Do not write a diagram you know will produce a parse error.
+
 ## Example
 
 ```mermaid

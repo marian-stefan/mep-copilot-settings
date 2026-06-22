@@ -5,315 +5,83 @@ The code remains available here for those who do not yet have a Trimble GitHub a
 
 ## Generic Engineering Workflow Toolkit
 
-A portable, repo-agnostic workflow toolkit for spec generation, code review, unit test creation, and early architecture work across technology stacks.
+Technology-agnostic multi-agent harness for spec-to-implementation workflows. Copy this repository into any project root and run `/init-ai-workflows` to get a fully-working agentic development workflow.
 
-## What's Included
+## Repository Structure
 
-``` text
-.github/
-├── agents/                 # Specialized AI agents
-│   ├── jira-analyst.agent.md
-│   ├── tech-researcher.agent.md
-│   ├── specs-writer.agent.md
-│   ├── generic-reviewer.agent.md
-│   ├── specs-workflow-orchestrator.agent.md
-│   ├── git-operator.agent.md
-│   └── unit-test-generator.agent.md
-├── skills/                 # Domain knowledge modules
-│   ├── specs-workflow-routing/SKILL.md
-│   ├── specs-workflow-state-machine/SKILL.md
-│   ├── specs-validation/SKILL.md
-│   ├── specs-quality-review/SKILL.md
-│   ├── specs-error-handling/SKILL.md
-│   ├── specs-subagent-invocation/SKILL.md
-│   ├── specs-generation-core/SKILL.md
-│   ├── specs-technology-routing/SKILL.md
-│   ├── specs-generation-angular/SKILL.md   # Angular spec extension
-│   ├── specs-generation-dotnet/SKILL.md    # .NET spec extension
-│   ├── review-angular/SKILL.md             # Angular review extension
-│   ├── review-dotnet/SKILL.md              # .NET review extension
-│   ├── unit-testing-core/SKILL.md
-│   ├── unit-testing-angular/SKILL.md
-│   ├── unit-testing-dotnet/SKILL.md
-│   └── google-docs-extraction/SKILL.md
-├── prompts/
-│   ├── create-specs.prompt.md      # User entry point for spec generation
-│   ├── start-implementation.prompt.md # User entry point for implementation from spec
-│   ├── create-unit-tests.prompt.md # User entry point for unit test generation
-│   ├── review-pr.prompt.md
-│   ├── review-branch-changes.prompt.md
-│   ├── fix-pr.prompt.md
-│   ├── create-impact-map.prompt.md
-│   └── create-high-level-design.prompt.md
-├── config/
-│   └── repo.config.sample.json     # Per-repo config template
-├── README.md                       # This file
-└── SPECS-WORKFLOW-GUIDE.md         # Step-by-step execution guide
+```markdown
+mep-copilot-settings/
+├── .github/
+│   ├── agents/       # Orchestrators and specialist agents (active harness)
+│   ├── skills/       # Domain knowledge files loaded on demand
+│   └── prompts/      # User-facing slash commands
+├── template/
+│   └── tech-layers/  # Technology-specific overlays (source of truth)
+│       └── dotnet/   # .NET 8+ / C# 12 reference implementation
+├── CLAUDE.md         # Guidance for Claude Code
+├── MAINTAINERS.md
+└── README.md
 ```
-
-## Key Features
-
-✅ **Ticket-to-Spec Automation**: Transform requirements tickets into implementation-ready specifications  
-✅ **Diff-Aware Unit Test Creation**: Generate or update tests from current branch changes using local project conventions  
-✅ **Review Workflows**: Review Bitbucket pull requests or current branch changes with a shared reviewer workflow  
-✅ **Quality Gates**: Automated validation, review depth, and testing guidance through plugin-driven skills  
-✅ **Git Integration**: Branch creation, commits, push (via `start-implementation` → Git Operator)  
-✅ **Generic Core + Plugins**: Works with any repository structure; technology behavior is plugin-driven
 
 ## Quick Start
 
-1. Copy `.github/` folder to your repository root
-2. Configure `.github/config/repo.config.json` for your repo
-3. Add a `.github/copilot-instructions.md` file if one doesn't exist yet — see [GitHub Copilot Instructions](https://code.visualstudio.com/docs/copilot/customization/custom-instructions) for reference
-4. Run the prompt that matches your task: `create-specs`, `create-unit-tests`, `review-pr`, or `review-branch-changes`
-5. For implementation work, review the generated spec, then run the `start-implementation` prompt with the spec attached
+1. Copy this repository into your project root:
 
-See [SPECS-WORKFLOW-GUIDE.md](.github/SPECS-WORKFLOW-GUIDE.md) for detailed step-by-step instructions.
+   ```bash
+   cp -r mep-copilot-settings/. your-project/
+   ```
 
-## Specs Workflow Steps
+2. Open your project in VS Code with GitHub Copilot or Claude Code.
+3. Run `/init-ai-workflows` — it detects your tech stack, installs the matching tech layer from `template/tech-layers/`, resolves all placeholders, and writes `.github/copilot-instructions.md`.
+4. Run `/create-specs <JIRA_KEY>` to verify the flow end-to-end.
 
-### 1. Analyze (Jira Analyst)
+## Core Flows
 
-Extract requirements, acceptance criteria, and ticket context.
+| Flow | Command | What it does |
+| ------ | --------- | ------------- |
+| Spec generation | `/create-specs <JIRA_KEY>` | Jira ticket → Requirement Brief → Technical Context → validated Spec |
+| Implementation | `/start-implementation [JIRA_KEY]` | Validated Spec → code + tests → review → commit |
+| Unit tests | `/create-tests` | Branch diff → unit test files → 100% coverage verification |
+| PR review | `/review pr <ID>` | Bitbucket PR → structured review report |
+| Branch review | `/review branch` | Local changeset → review report |
+| High-level design | `/create-high-level-design <EPIC_KEY>` | Epic → HLD + ADRs |
+| Impact map | `/create-impact-map <EPIC_KEY>` | Epic → architecture impact map |
+| Harness init | `/init-ai-workflows` | Detect stack, install tech layer, configure repo |
+| Tech layer generation | `/generate-tech-layer <stack>` | Research a new stack and generate its tech layer |
 
-### 2. Route (Orchestrator)
+## How the Tech Layer Works
 
-Validate issue type and select agents.
+The base agents contain `{{PLACEHOLDER}}` tokens for technology-specific concepts. A tech layer provides agent overrides that fill these in. Tech-layer agents **shadow** base agents by name — the AI coding tool prefers the stack-specific variant when the tech layer is active.
 
-### 3. Research (Tech Researcher)
+| Placeholder | Meaning | .NET example |
+| ------------ | --------- | ------------- |
+| `{{BUILD_SYSTEM_PROJECT_DISCOVERY}}` | Find affected projects | `find . -name "*.csproj"` |
+| `{{DEPENDENCY_GRAPH_COMMAND}}` | Build dependency graph | `dotnet list ref` |
+| `{{CODEBASE_MODULE_TAXONOMY}}` | Module naming convention | `*.Api / *.Application / *.Domain / *.Infrastructure` |
+| `{{STATE_MANAGEMENT_PATTERNS}}` | How state is managed | MediatR CQRS, IOptions, DI |
+| `{{SUBSCRIPTION_LIFECYCLE_PATTERN}}` | Resource/subscription cleanup | `IDisposable`, `CancellationToken` |
+| `{{TEST_COMMAND}}` | Run tests with coverage | `dotnet test --collect:"XPlat Code Coverage"` |
+| `{{SCAFFOLD_COMMAND}}` | Scaffold new modules/classes | `dotnet new classlib` |
 
-Analyze codebase, identify affected files, plan implementation.
+## Creating a New Tech Layer
 
-### 4. Generate (Specs Writer)
+**Automated (recommended)**: run `/generate-tech-layer <stack>` — it researches the stack online, adversarially verifies claims, presents a human review gate, then writes all required files into `template/tech-layers/<slug>/`. The next `/init-ai-workflows` run will pick it up automatically.
 
-Create formal specification document.
+**Manual**: see `template/ADAPTER-GUIDE.md` for the full contract — mandatory files, required placeholder resolutions, and a validation checklist.
 
-### 5. Validate (Reviewer)
+## Steering Loop
 
-Check completeness, quality, and coverage.
-
-Validation always uses `Generic Reviewer`.
-Technology-specific review depth is resolved from `.github/skills/specs-technology-routing/SKILL.md` via an optional review skill.
-Quality scoring and bucket thresholds are defined in `.github/skills/specs-quality-review/SKILL.md`.
-
-### 6. Complete
-
-Produces a summary with ticket info, spec file path, quality score, complexity, and risk level. Artifacts are committed during implementation via `start-implementation`.
-
-## Additional Workflows
-
-### Unit Test Creation
-
-Use `/create-unit-tests` to generate or update tests for current branch changes.
-
-```bash
-/create-unit-tests
-/create-unit-tests main
-/create-unit-tests release/2026.04
-```
-
-What it does:
-
-- Uses `Unit Test Generator` to detect added, updated, or deleted functionality relative to a base branch.
-- Reuses local test style patterns and stack-specific unit-testing skills.
-- Updates, creates, or removes test files as needed for impacted source changes.
-- Runs validation commands for affected projects and reports coverage status.
-
-Use this prompt when you want to:
-
-- backfill tests for a feature branch
-- keep test suites aligned with source refactors
-- verify coverage impact before opening or merging a PR
-
-### Review Workflows
-
-Use the review prompts for code review tasks outside the Specs flow:
+The harness includes a feedback loop that improves spec quality over time:
 
 ```bash
-/review pr 4821
-/review-branch-changes
+/create-specs → spec → /accept-spec or /reject-spec → METRICS.md → /review-harness-health → guide improvement
 ```
 
-- `review-pr.prompt.md` reviews a Bitbucket pull request by PR ID.
-- `review-branch-changes.prompt.md` reviews local branch differences versus `develop`.
-- Both rely on `Generic Reviewer` as the canonical review workflow.
+Run `/review-harness-health` after accumulating 5+ accept/reject signals to surface systematic issues in the workflow guides.
 
-## Specs Workflow Usage
+## Prerequisites
 
-### Basic
-
-```bash
-/create-specs TICKET-123
-```
-
-### Epics with child ticket suggestions
-
-```bash
-/create-specs TICKET-123 --create-children
-```
-
-### Implementation From Spec
-
-```bash
-/start-implementation
-```
-
-Attach the generated `docs/specs/{TICKET_KEY}/SPEC-{TICKET_KEY}-{Plan|Epic|Spike}.md` file when invoking the prompt. Include `docs/specs/{TICKET_KEY}/CONTEXT-{TICKET_KEY}.md` as supporting context when useful. The prompt will guide you through implementation and handle the git commit via Git Operator.
-
-## Architecture and Design Prompts
-
-The repository also includes two prompts for early architecture work:
-
-- `create-impact-map.prompt.md`
-- `create-high-level-design.prompt.md`
-
-For architecture work, the requirements source is the Jira Epic, and the prompts fetch that data directly through Jira Analyst.
-
-The recommended architecture flow is:
-
-1. Run `/create-impact-map <EPIC_KEY>`.
-2. The prompt uses Jira Analyst to fetch the Epic, acceptance criteria, and child issues.
-3. Run `/create-high-level-design <EPIC_KEY>`.
-4. The prompt reuses the same Epic context, reads the previously created `impact-map.md`, and generates the HLD and ADRs.
-
-### Recommended Flow
-
-| Step | Input | Output |
-| ------ | ------- | -------- |
-| 1. Create impact map | Jira Epic key via `/create-impact-map <EPIC_KEY>` | `<topic>/impact-map.md` |
-| 2. Create high-level design | Jira Epic key via `/create-high-level-design <EPIC_KEY>` | `<topic>/high-level-design.md` and `adrs.md` |
-
-Traceability stays linear: Jira Epic -> Jira Analyst output -> Impact Map -> High-Level Design.
-
-### How to Use `/create-impact-map`
-
-Run the prompt with the Jira Epic key:
-
-```bash
-/create-impact-map HON-1234
-```
-
-What it does:
-
-- Uses Jira Analyst to fetch Epic details, acceptance criteria, and child issues.
-- Uses Jira Epic data as the source of truth.
-- Creates a topic folder in the workspace root based on the Epic summary.
-- Writes `impact-map.md` into that folder.
-- Uses that folder as the shared output location for later architecture artifacts.
-
-Use this prompt when you want to turn Epic requirements into:
-
-- a clear requirement and acceptance criteria breakdown
-- affected modules, dependencies, and risks
-- explicit assumptions and scope boundaries
-
-### How to Use `/create-high-level-design`
-
-Run the prompt with the same Jira Epic key used for the impact map:
-
-```bash
-/create-high-level-design HON-1234
-```
-
-What it does:
-
-- Uses Jira Analyst to fetch Epic details for traceability.
-- Locates the existing `impact-map.md` from the prior `/create-impact-map` run.
-- Reads the impact map as the primary design input.
-- Saves `high-level-design.md` in the same folder as the impact map.
-- Creates `adrs.md` in that folder.
-- May use the bundled `adr` and `mermaid` skills to structure decisions and diagrams.
-
-Use this prompt when you want to produce:
-
-- major components and responsibilities
-- integrations and end-to-end flow
-- key architectural decisions with ADR traceability
-
-### Prompt Notes
-
-- The business source of truth and prompt input are both the Jira Epic key.
-- Both prompts rely on Jira Analyst to fetch Epic data and child issue context.
-- `/create-high-level-design` assumes `/create-impact-map` was already run for the same Epic key.
-- Supporting architecture skills live under `.github/skills/`, especially `adr`, `c4-diagrams`, and `mermaid`.
-
-## Configuration
-
-Edit `.github/config/repo.config.json`:
-
-```json
-{
-  "repoType": "your-stack",
-  "specOutputPath": "./docs/specs",
-  "ticketSource": "jira",
-  "jiraConfig": {
-    "host": "https://jira.trimble.tools",
-    "projectKey": "PROJ"
-  },
-  "repositoryInfo": {
-    "name": "your-repo-name",
-    "language": "your-language",
-    "description": "Brief description of repo purpose"
-  }
-}
-```
-
-`specOutputPath` is reserved for workflow variants. The default Specs workflow currently writes generated artifacts to repository root.
-
-## Output Artifacts
-
-Three files are created in repository root:
-
-- **`BRIEF-{TICKET_KEY}.md`** - Requirement Brief (from analyst)
-- **`CONTEXT-{TICKET_KEY}.md`** - Technical Context (from researcher)
-- **`SPEC-{TICKET_KEY}-Plan.md`** - Final Spec (from writer)
-
-Plus a git branch (feature/{TICKET_KEY}) with committed spec.
-
-## Error Handling
-
-| Error | Resolution |
-| ------- | ----------- |
-| Ticket not found | Verify `ticketSource` config and Jira access |
-| Git conflicts | Stash unrelated changes, retry |
-| Partial data | Review Open Questions in output, update ticket |
-
-See `skills/specs-error-handling/SKILL.md` for detailed error taxonomy.
-
-## Extending for Your Stack
-
-The workflow is fully technology-agnostic. To tailor it for your stack:
-
-1. Set `repoType` and `language` in `.github/config/repo.config.json`
-2. Tech Researcher adapts automatically to your language conventions
-3. To add stack-specific guidance, create a technology plugin:
-    - Register the plugin in `skills/specs-technology-routing/SKILL.md`
-    - Follow the plugin structure and resolution rules defined there
-    - Add `skills/review-{pluginId}/SKILL.md` for review checks
-    - Add `skills/specs-generation-{pluginId}/SKILL.md` for spec extensions when needed
-4. Without a plugin, `Generic Reviewer` runs with no extra review skill
-
-## References
-
-- **Routing & Naming**: `skills/specs-workflow-routing/SKILL.md`
-- **Quality Validation**: `skills/specs-validation/SKILL.md`
-- **Error Taxonomy**: `skills/specs-error-handling/SKILL.md`
-- **Spec Core Template**: `skills/specs-generation-core/SKILL.md`
-- **Angular Extension Template**: `skills/specs-generation-angular/SKILL.md`
-- **Technology Routing**: `skills/specs-technology-routing/SKILL.md`
-- **Agent Invocation**: `skills/specs-subagent-invocation/SKILL.md`
-- **Unit Testing Baseline**: `instructions/testing.instructions.md`
-- **Unit Testing Core Skill**: `skills/unit-testing-core/SKILL.md`
-
-## Support & Maintenance
-
-- All agents are polymorphic (auto-adapt to issue type)
-- All skills are generic (language/framework agnostic)
-- Technology behavior is plugin-driven, not hardcoded
-- Ready for replication into other repositories without modification
-
----
-
-**Version**: 1.0  
-**Created**: March 10, 2026  
-**Status**: Ready for production use
+- VS Code with GitHub Copilot, or Claude Code
+- MCP servers configured in `.vscode/mcp.json`:
+  - `etools` — Jira + Bitbucket access (required for `/create-specs`, `/review-pr`, `/fix-pr`)
+  - `web` / `fetch` — required for backend service discovery
