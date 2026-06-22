@@ -23,6 +23,10 @@ Use this skill to keep error handling consistent across orchestrator and sub-age
 | `DATA_PARTIAL` | Fallback | CONTINUE | Proceed, document limitation |
 | `VALIDATION_FAIL` | Validation | RETURN | Mark for iteration |
 | `EXTERNAL_TIMEOUT` | Tool Unavailability | CONTINUE | Retry or skip |
+| `TEST_FAIL` | Implementation | STAY IN IMPLEMENT | Fix failing tests before advancing to REVIEW |
+| `COVERAGE_GAP` | Implementation | STAY IN IMPLEMENT | Add tests to meet 100% threshold before advancing |
+| `BUILD_FAIL` | Implementation | STAY IN IMPLEMENT | Resolve build/lint errors before advancing |
+| `SPEC_NOT_FOUND` | Spec Resolution | HARD STOP | Verify spec path or re-run `/create-specs {KEY}` |
 
 ## Error Message Template
 
@@ -53,5 +57,5 @@ Use this skill to keep error handling consistent across orchestrator and sub-age
 - Jira Analyst: hard-stop on missing/invalid ticket, continue on partial non-critical data.
 - Tech Researcher: hard-stop on missing brief or invalid workspace, continue with documented gaps.
 - Specs Writer: return validation failures with concrete missing sections.
-- Git Operator: hard-stop on unrelated staged files/auth failures.
-- Reviewer: return structured validation issues and decision bucket.
+- Code Reviewer: return structured validation issues and decision bucket.
+- Implementation Workflow Orchestrator: use `TEST_FAIL`/`COVERAGE_GAP`/`BUILD_FAIL` to stay in IMPLEMENT; use `SPEC_NOT_FOUND` for hard-stop on missing spec.

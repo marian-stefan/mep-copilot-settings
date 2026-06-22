@@ -1,13 +1,17 @@
 ---
-agent: 'Generic Reviewer'
-tools: ['read', 'edit', 'search', 'agent', 'bitbucket/*', 'execute']
+agent: 'Code Reviewer'
+tools: ['read', 'edit', 'search', 'agent', 'etools/bitbucket_get-pull-request', 'etools/bitbucket_get-pr-diff', 'etools/bitbucket_get-commits', 'etools/bitbucket_get-pr-activities', 'etools/bitbucket_get-file-content', 'etools/bitbucket_browse-files', 'etools/bitbucket_list-pull-requests', 'execute']
 description: 'Analyze and fix pull request feedback based on PR ID from Bitbucket'
-argument-hint: '<PR_ID> [--dry-run] [--skip-tests]'
+argument-hint: '<PR_ID> [--dry-run] [--skip-tests] [--auto-commit] [--priority=<level>] [-y]'
 ---
 
 # Fix PR
 
 Analyze Bitbucket pull request feedback and automatically apply fixes to address reviewer comments and CI failures.
+
+**You MUST use the etools MCP Bitbucket tools to fetch PR data. Do NOT skip this step or fabricate PR information.**
+
+**DO NOT USE Bitbucket API directly or any other method to obtain PR details. All information must come from the specified etools MCP tools.**
 
 ## Command Usage
 
@@ -17,7 +21,7 @@ Analyze Bitbucket pull request feedback and automatically apply fixes to address
 
 **Examples**:
 
-```bash
+```
 # Standard usage - analyze and fix PR issues
 /fix pr 4821
 
@@ -29,13 +33,17 @@ Analyze Bitbucket pull request feedback and automatically apply fixes to address
 
 # Auto-commit fixes after resolution
 /fix pr 4821 --auto-commit
+
+# Only fix critical and high priority issues
+/fix pr 4821 --priority=high
 ```
 
-## Repository Platform Configuration
+## Bitbucket Configuration
 
-- **Project**: `{replace_with_project_key}` (e.g., `MP`)
-- **Repository**: `{replace_with_repository_name}` (e.g., `mepworkspace`)
-- **Base URL**: `https://bitbucket.trimble.tools/trimbleprojectmep/{replace_with_project_key}/{replace_with_repository_name}`
+> **Adopter note**: Replace these values with your project's Bitbucket coordinates. See `ADAPTER-GUIDE.md`.
+
+- **Project**: `{YOUR_BITBUCKET_PROJECT}`
+- **Repository**: `{YOUR_BITBUCKET_REPO}`
 
 ## Workflow Overview
 
@@ -49,7 +57,7 @@ The fix process follows this sequence:
        │                  │                  │                  │                  │
        ▼                  ▼                  ▼                  ▼                  ▼
   PR metadata       Review comments     Code edits        Run tests          Fix summary
-  Diff analysis     CI failures         Lint/format       Check lint         Next steps
+  Diff analysis     CI failures         Lint/format       Run lint           Next steps
   Branch info       Build errors        Security fixes    Verify build       Commit msg
 ```
 
@@ -57,24 +65,24 @@ The fix process follows this sequence:
 
 ### 1. Fetch PR Details
 
-Request PR information from the user or via manual Bitbucket access:
-- PR title, description, and status
-- Source and target branches
-- Review comments and inline feedback
-- CI/CD pipeline results and errors
-- Build/test failures
-- Changed files in the PR
+Call the following etools MCP tools in sequence to gather all PR data. Do NOT ask the user to supply this information manually.
 
-**User Prompt**:
-```
-Please provide the PR details for PR #<PR_ID>:
-1. Link to the PR: https://bitbucket.trimble.tools/trimbleprojectmep/{replace_with_project_key}/{replace_with_repository_name}/pull-requests/<PR_ID>
-2. Review comments (if any)
-3. CI/CD failures (if any)
-4. Any specific feedback to address
+1. **PR metadata and description**:
+   `etools/bitbucket_get-pull-request` — project: `{YOUR_BITBUCKET_PROJECT}`, repo: `{YOUR_BITBUCKET_REPO}`, prId: `<PR_ID>`
+   → Capture: title, description, status, source branch, target branch
 
-Or simply share the PR URL and I'll guide you through gathering the needed information.
-```
+2. **Changed files and diff**:
+   `etools/bitbucket_get-pr-diff` — project: `{YOUR_BITBUCKET_PROJECT}`, repo: `{YOUR_BITBUCKET_REPO}`, prId: `<PR_ID>`
+   → Capture: list of modified files and their diffs
+
+3. **Review comments and inline feedback**:
+   `etools/bitbucket_get-pr-activities` — project: `{YOUR_BITBUCKET_PROJECT}`, repo: `{YOUR_BITBUCKET_REPO}`, prId: `<PR_ID>`
+   → Capture: all reviewer comments, inline annotations, approval status
+
+4. **Commit history**:
+   `etools/bitbucket_get-commits` — project: `{YOUR_BITBUCKET_PROJECT}`, repo: `{YOUR_BITBUCKET_REPO}`, prId: `<PR_ID>`
+   → Capture: commit messages and authors
+
 
 ### 2. Analyze Feedback
 
@@ -89,132 +97,97 @@ Classify and prioritize issues:
 **Issue Categories**:
 - **Build Errors**: Compilation failures, missing dependencies
 - **Test Failures**: Failing unit/e2e tests
-- **Lint Issues**: Linting and formatting violations
+- **Lint Issues**: linting and formatting violations
 - **Security**: XSS risks, unsafe operations, exposed secrets
-- **Architecture**: Boundary violations, improper layering, circular dependencies
-- **Framework Patterns**: Deprecated framework patterns, outdated syntax, anti-patterns
-- **Performance**: Unoptimized rendering, redundant work, memory leaks
-- **Code Quality**: High complexity, deep nesting (>4 levels), missing immutability safeguards
+- **Architecture**: dependency boundary violations, improper layering
+- **Codebase Patterns**: Deprecated syntax, old control flow, missing tech-stack patterns
+- **Performance**: unoptimized rendering, resource leaks, memory leaks
+- **Code Quality**: High complexity, deep nesting (>4 levels), missing immutability annotations
 - **Testing**: Missing unit tests, inadequate coverage
 
 ### 3. Apply Fixes
 
-Execute fixes in priority order:
+Execute fixes in priority order. When `--priority=<level>` is set, run only sections at or above the specified level: `critical` runs 3.1 only; `high` runs 3.1–3.2; `medium` runs 3.1–3.3; `low` (default) runs all sections.
 
 #### 3.1 Critical Fixes (Automated)
 
 **Build Errors**:
 ```bash
-# Check for compilation errors
-<build_command> --verbose
-
-# Fix missing dependencies
-<package_manager_install_command> <missing-package>
-
-# Verify dependency graph and project configuration are valid
-<dependency_graph_check_command>
+# Check for compilation/build errors using {{BUILD_COMMAND}}
+# Fix missing dependencies using {{INSTALL_COMMAND}}
+# Verify workspace dependency graph using {{DEPENDENCY_GRAPH_COMMAND}}
 ```
 
 **Test Failures**:
 ```bash
-# Run failed tests
-<test_command> --watch=false
-
+# Run failed tests using {{TEST_COMMAND}}
 # Review test output and fix assertions
-# Update snapshots if needed
-<test_command> --updateSnapshot
+# Update snapshots/expected outputs if needed
 ```
 
 **Security Issues**:
-- Remove exposed secrets/tokens immediately
-- Replace unsafe trust/bypass APIs with safe alternatives
-- Validate and sanitize all external input (query params, body, headers, file uploads)
-- Enforce output encoding/escaping in templates and DOM rendering paths
-- Apply least-privilege access for API keys, tokens, service accounts, and RBAC roles
-- Avoid unsafe dynamic execution (`eval`, dynamic script injection, unsafe HTML rendering)
-- Do not log secrets, credentials, PII, or full auth tokens; redact sensitive values in logs
-- Pin and update vulnerable dependencies; remove deprecated or unmaintained packages
+- Replace unsafe output/rendering APIs with safe alternatives
+- Sanitize user inputs using the framework's sanitization APIs
+- Remove exposed secrets/tokens and move them to environment variables
+- Add CSP headers if missing
+
+```
+// ❌ Deprecated pattern: bypassing framework sanitization
+// element.unsafeRender(userInput)
+
+// ✅ Modern pattern: use the framework's sanitization APIs
+// element.safeRender(framework.sanitize(userInput))
+
+// ❌ Deprecated pattern: hardcoded secret
+// const API_KEY = 'sk-abc123'
+
+// ✅ Modern pattern: use environment variable
+// const API_KEY = env.API_KEY  // injected via build-time environment config
+```
 
 #### 3.2 High Priority Fixes
 
-**Architecture Boundary Violations**:
-- Identify forbidden cross-layer imports and coupling points
-- Refactor to respect layering rules (presentation -> application -> domain -> infrastructure)
-- Move shared logic to appropriately scoped shared modules/packages
+**Dependency Boundary Violations**:
+- Identify forbidden imports using the tech-layer's dependency graph tooling
+- Refactor to respect layering rules defined in `{{CODEBASE_MODULE_TAXONOMY}}`
+- Move shared logic to appropriate shared modules/libraries
 
-**Framework Pattern Violations**:
-```typescript
-// ❌ Before: Mutable state and lifecycle-heavy imperative setup
-class ExampleComponent {
-  value = 0;
-
-  init() {
-    // Imperative setup spread across lifecycle hooks
-    this.value = this.value + 1;
-  }
-}
-
-// ✅ After: Explicit immutability and predictable initialization
-class ExampleComponent {
-  readonly value = 1;
-
-  constructor() {
-    // Keep initialization deterministic and side-effect aware
-  }
-}
+**Codebase Pattern Violations**:
 ```
+// ❌ Deprecated pattern
+// (refer to tech-layer patterns skill for stack-specific examples)
 
-**Control Flow Modernization**:
-```typescript
-// ❌ Before: Nested and hard-to-follow conditional/loop flow
-if (items && items.length > 0) {
-  for (const item of items) {
-    render(item);
-  }
-}
-
-// ✅ After: Clear guards and explicit iteration behavior
-if (!items || items.length === 0) return;
-for (const item of items) {
-  render(item);
-}
+// ✅ Modern tech-stack patterns
+// (refer to tech-layer patterns skill for stack-specific examples)
 ```
 
 #### 3.3 Medium Priority Fixes
 
 **Code Style & Formatting**:
 ```bash
-# Auto-fix linting issues
-<lint_command> --fix
-
-# Format all changed files
-<format_command>
+# Auto-fix linting issues using the tech-layer lint command
+# Format all changed files using {{BUILD_COMMAND}} format tooling
 ```
 
-**Missing readonly Modifiers**:
-```typescript
-// ❌ Before
-class ExampleService {
-  private client = createClient();
-  private config = { timeoutMs: 3000 };
-}
+**Missing Immutability Annotations**:
+```
+// ❌ Before: mutable field / dependency reference
+//   service = container.resolve(SomeService)
 
-// ✅ After
-class ExampleService {
-  private readonly client = createClient();
-  private readonly config = { timeoutMs: 3000 };
-}
+// ✅ After: immutable/readonly field / dependency reference
+//   readonly service = container.resolve(SomeService)
+// (exact syntax depends on the tech stack)
 ```
 
 **Reduce Nesting (≤4 levels)**:
-```typescript
+```
 // ❌ Before: Deep nesting
 function process() {
   if (condition1) {
     if (condition2) {
       if (condition3) {
         if (condition4) {
-          if (condition5) { // Level 5 - too deep!
+          if (condition5) { // Level 5 - too deep
             // logic
           }
         }
@@ -243,23 +216,13 @@ function process() {
 
 ### 4. Verify Changes
 
-Run comprehensive checks:
+Run comprehensive checks using the tech-layer tooling:
 
 ```bash
-# Check for compilation/type errors
-<build_command> --parallel
-
-# Run affected tests
-<affected_test_command> --base=<base_ref> --head=HEAD
-
-# Lint affected projects
-<affected_lint_command> --base=<base_ref> --head=HEAD --fix
-
-# Format code
-<format_command>
-
-# Verify dependency graph integrity
-<dependency_graph_check_command>
+# Build affected modules: {{BUILD_COMMAND}}
+# Run affected tests:     {{TEST_COMMAND}}
+# Lint and format:        (refer to tech-layer lint/format commands)
+# Verify dependency graph: {{DEPENDENCY_GRAPH_COMMAND}}
 ```
 
 ### 5. Report Summary
@@ -274,16 +237,16 @@ Generate a comprehensive fix report:
 ### Issues Addressed
 
 #### 🔴 Critical (X/Y resolved)
-- [x] Build failure in `src/modules/orders` - Fixed missing import
-- [x] Test failure in `tests/order-service.test.ts` - Updated mock data
+- [x] Build failure in `libs/example/feature` - Fixed missing import
+- [x] Test failure in `{ExampleUnit}.spec` - Updated mock data
 - [ ] Security: Exposed API key in config - **MANUAL REVIEW REQUIRED**
 
 #### 🟠 High Priority (X/Y resolved)
-- [x] Architecture boundary violation: feature layer importing infrastructure internals
-- [x] Replaced deprecated framework patterns in 3 modules
+- [x] Nx boundary violation: `feature` importing from sibling `feature`
+- [x] Missing tech-stack pattern compliance in 3 modules
 
 #### 🟡 Medium Priority (X/Y resolved)
-- [x] Lint errors: 12 issues fixed
+- [x] ESLint errors: 12 issues fixed
 - [x] Missing `readonly` on 8 class fields
 
 #### 🟢 Low Priority (X/Y resolved)
@@ -293,13 +256,13 @@ Generate a comprehensive fix report:
 ### Changes Applied
 
 **Modified Files**: 14
-- `src/modules/orders/order-handler.ts`
-- `src/shared/services/order-service.ts`
+- `{path/to/modified/file}`
+- `{path/to/modified/file}`
 - ...
 
 **Tests Updated**: 3
-- `tests/order-handler.test.ts`
-- `tests/order-service.test.ts`
+- `{module}.spec`
+- `{service}.spec`
 
 **Verification Results**:
 - ✅ Build: Passing
@@ -310,8 +273,8 @@ Generate a comprehensive fix report:
 ### Remaining Issues
 
 1. **Manual Review Required**: 
-   - Security: Line 42 in `config.ts` contains potential secret
-  - Architecture: Consider extracting shared logic to `src/shared/utils`
+   - Security: Line 42 in `{file}` contains potential secret
+   - Architecture: Consider extracting shared logic to a shared module
 
 2. **Follow-up Tasks**:
    - Add e2e tests for new user flow
@@ -319,29 +282,12 @@ Generate a comprehensive fix report:
 
 ### Next Steps
 
-```bash
 # Review changes
 git diff origin/develop...HEAD
 
-# Commit fixes (if --auto-commit not used)
+# Commit fixes using the template below (skipped when --auto-commit is used)
 git add .
-git commit -m "fix(pr-<PR_ID>): Address review feedback
-
-- Fix build failures in affected projects
-- Migrate deprecated framework patterns
-- Add missing tests
-- Apply code formatting
-
-Resolves feedback from PR #<PR_ID>"
-
-# Push to feature branch
-git push origin <feature-branch>
-```
-
-### Commit Message Template
-
-```
-fix(pr-<PR_ID>): <Short description>
+git commit -m "fix(pr-<PR_ID>): <Short description>
 
 <Detailed description of changes>
 
@@ -350,81 +296,71 @@ fix(pr-<PR_ID>): <Short description>
 - Applied formatting and linting
 
 Addresses feedback from PR #<PR_ID>
-Reviewers: @<reviewer-names>
-```
-```
+Reviewers: @<reviewer-names>"
 
+# Push to feature branch
+git push origin <source-branch>
+```
 ## Flags & Options
 
 | Flag | Description |
 |------|-------------|
-| `--dry-run` | Analyze issues without applying fixes |
+| `--dry-run` | Analyze and report issues without applying any fixes. Output uses the same Step 5 report template with all items marked pending. Re-run without this flag to apply fixes. |
 | `--skip-tests` | Skip running tests after applying fixes |
-| `--auto-commit` | Automatically commit changes after successful fixes |
-| `--priority=<level>` | Only fix issues at or above priority level (critical, high, medium, low) |
-| `-y`, `--yes` | Skip confirmation prompts |
+| `--auto-commit` | Commit changes locally after all fixes pass verification. Does **not** push — push remains manual. |
+| `--priority=<level>` | Only fix issues at or above the specified level: `critical` (3.1 only), `high` (3.1–3.2), `medium` (3.1–3.3), `low` / default (all). |
+| `-y`, `--yes` | Skip any confirmation prompts (e.g. before applying security-related changes or bulk rewrites) |
 
 ## Review Focus Areas
 
-The fix process addresses issues identified by the assigned reviewer agent:
+The fix process addresses issues identified by the Code Reviewer agent:
 
-1. **Architecture**: Layering, domain boundaries, forbidden imports
-2. **Framework Patterns**: Current framework conventions, modern control flow, stable APIs
-3. **Reactivity**: Predictable state updates, proper subscription/resource cleanup
-4. **Performance**: Rendering efficiency, query optimization, hot-path optimization
-5. **Security**: XSS prevention, safe DOM operations, secret handling
-6. **Immutability**: Readonly fields, const usage, immutable state
-7. **Complexity**: Function nesting (≤4 levels), cyclomatic complexity
-8. **Testing**: Unit test coverage, missing test cases, test quality
+1. **Architecture**: module layering, domain boundaries, forbidden imports
+2. **Codebase Patterns**: current idioms, modern control flow, state management
+3. **Resource Lifecycle**: `{{SUBSCRIPTION_LIFECYCLE_PATTERN}}`, async hygiene
+4. **Performance**: rendering optimisation, deferred loading, resource cleanup
+5. **Security**: injection prevention, safe output APIs, secret handling
+6. **Immutability**: readonly/const fields, immutable state patterns
+7. **Complexity**: function nesting (≤4 levels), cyclomatic complexity
+8. **Testing**: unit test coverage, missing test cases, test quality
 
 ## Error Handling
 
 **PR Not Found**:
-```
+```markdown
 ❌ Error: PR #<PR_ID> not found in Bitbucket
 Please verify the PR ID and ensure you have access to the repository.
-Project: MP | Repository: mepworkspace
+Project: {YOUR_BITBUCKET_PROJECT} | Repository: {YOUR_BITBUCKET_REPO}
 ```
 
 **Merge Conflicts**:
-```
+```markdown
 ⚠️ Warning: Merge conflicts detected
 Please resolve conflicts manually before applying automated fixes.
 
 Files with conflicts:
-- src/modules/orders/order-handler.ts
-- src/shared/services/api-client.ts
+- {path/to/conflicted/file}
+- {path/to/conflicted/file}
 ```
 
 **Build Failures After Fixes**:
-```
+```markdown
 ❌ Error: Build failed after applying fixes
-Reverting changes and generating diagnostic report...
+Reverting changes...
+
+# Stash changes to restore a clean working tree
+git stash
+
+# Or discard all unstaged changes
+git checkout -- .
 
 Check the error output above and address manually, or run with --dry-run to preview changes.
 ```
 
 ## Integration with Other Agents
 
-- Delegates to **Reviewer Agent** for comprehensive code review
+- Delegates to **Code Reviewer** for comprehensive code review
 - Uses **Git Operator** for branch and commit operations
-- Leverages **Tech Researcher** for complex refactoring decisions
-- Consults project structure tooling for workspace structure and dependencies
+- Consults the codebase directly for complex refactoring decisions
+- Consults **Nx MCP Server** for workspace structure and dependencies
 
-## Best Practices
-
-1. **Always review changes** before committing (use `--dry-run` first)
-2. **Run full test suite** before pushing fixes
-3. **Update PR description** with fix summary
-4. **Request re-review** from original reviewers
-5. **Link related issues** in commit messages
-6. **Document breaking changes** if any
-7. **Verify dependency graph** remains valid after fixes
-
-## Related Documentation
-
-- [Reviewer Agent](../agents/generic-reviewer.agent.md)
-- [Review Angular Skill](../skills/review-angular/SKILL.md)
-- [Review .NET Skill](../skills/review-dotnet/SKILL.md)
-- [Review PR Prompt](./review-pr.prompt.md)
-- [Review Branch Changes Prompt](./review-branch-changes.prompt.md)

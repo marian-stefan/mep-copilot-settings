@@ -1,0 +1,47 @@
+{
+  "$schema": "https://json.schemastore.org/claude-code-settings.json",
+  "permissions": {
+    "allow": [
+      "Bash(npm run *)",
+      "Bash(node *)",
+      "Bash(find . *)",
+      "Bash(grep *)",
+      "Bash(git status *)",
+      "Bash(git diff *)",
+      "Bash(git log *)",
+      "Bash(git fetch *)",
+      "Bash(git branch *)",
+      "Bash(git show *)",
+      "mcp__etools__jira_get-issue",
+      "mcp__etools__jira_search-issues",
+      "mcp__etools__jira_get-comments",
+      "mcp__etools__jira_get-attachments",
+      "mcp__etools__bitbucket_get-pull-request",
+      "mcp__etools__bitbucket_get-pr-diff",
+      "mcp__etools__bitbucket_get-pr-commits",
+      "mcp__etools__bitbucket_get-commits",
+      "mcp__etools__bitbucket_get-pr-activities",
+      "mcp__etools__bitbucket_get-file-content",
+      "mcp__etools__bitbucket_browse-files",
+      "WebFetch(domain:docs.anthropic.com)",
+      "WebFetch(domain:code.visualstudio.com)",
+      "WebFetch(domain:github.com)"
+    ]
+  },
+  "hooks": {
+    "PreToolUse": [
+      {
+        "matcher": "Edit|Write|MultiEdit",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "bash -c 'file=\"$1\"; if echo \"$file\" | grep -qE \"\\.(ts|html)$\"; then if grep -qE \"bypassSecurityTrust\" \"$file\" 2>/dev/null; then echo \"[hook] BLOCKED: bypassSecurityTrust* detected in $file — add an explicit sanitization comment or use Angular template binding instead\"; exit 2; fi; fi'",
+            "description": "Block writes containing bypassSecurityTrust* without a sanitization comment"
+          }
+        ]
+      }
+    ],
+    "PostToolUse": [],
+    "Stop": []
+  }
+}

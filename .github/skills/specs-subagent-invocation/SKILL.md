@@ -10,46 +10,60 @@ It does not define workflow routing, validation thresholds, or agent contracts.
 
 ## Function Signature
 
-```typescript
+```
 runSubagent({
-  description: string;
-  prompt: string;
-}): Promise<string>
+  agentName?: string   // optional — routes to a named agent (e.g. "Spec Reviewer", "Tech Researcher (Story)")
+  description: string
+  prompt: string
+}) → Promise<string>
 ```
 
 ## Invocation Pattern
 
-```typescript
-const result = await runSubagent({
+```
+result = await runSubagent({
   description: "Descriptive task name",
   prompt: `Clear, detailed instructions...
            Include context needed by subagent.
            Specify expected output format.
            Include constraints and success criteria.`
-});
+})
 ```
 
 ## Best Practices
 
 - Include explicit context, expected output format, and completion criteria.
 - Avoid vague instructions and multi-problem prompts.
+- Wrap calls in error handling and document fallback behavior.
+- Validate non-empty output and required markers before integrating.
 
 ## Common Invocations
 
+### Backend Service Discovery
+
+```
+backendServices = await runSubagent({
+  description: "Backend Service Discovery",
+  prompt: `Discover backend services for: ${featureDescription}.
+           Affected modules: ${affectedModules.join(", ")}.
+           Return Backend Service Dependencies with real Swagger data.`
+})
+```
 
 ### Implementation Planning
 
-```typescript
-const implementationPlan = await runSubagent({
+```
+implementationPlan = await runSubagent({
   description: "Implementation Plan",
   prompt: `Requirement Brief: ${requirementBrief}
            Output ordered actionable steps, exact file paths,
-           implementation commands, effort estimates, and risk notes.`
-});
+           build commands ({{BUILD_COMMAND}}), effort estimates, and risk notes.`
+})
 ```
 
 ## References
 
+- Backend validation gate: `.github/skills/specs-backend-validation-gate/SKILL.md`
 - Validation rules: `.github/skills/specs-validation/SKILL.md`
 - Routing and naming: `.github/skills/specs-workflow-routing/SKILL.md`
 - Error handling patterns: `.github/skills/specs-error-handling/SKILL.md`

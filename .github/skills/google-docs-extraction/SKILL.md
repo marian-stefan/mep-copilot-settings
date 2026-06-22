@@ -9,32 +9,34 @@ This skill enables detection and extraction of content from Google Docs and Goog
 
 ## Configuration
 
+> **Adopter note**: This skill uses an OAuth 2.0 + n8n webhook integration. Replace all `{YOUR_*}` placeholders below with your organization's values before deploying. These are intentionally left as placeholders in the base harness.
+
 ### Required Environment Variables
 
 | Variable | Description | Example |
-| ---------- | ------------- | --------- |
-| `TRIMBLE_CLIENT_ID` | OAuth 2.0 Client ID for Trimble authentication | `your-client-id` |
-| `TRIMBLE_CLIENT_SECRET` | OAuth 2.0 Client Secret for Trimble authentication | `your-client-secret` |
-| `TRIMBLE_OAUTH_SCOPE` | OAuth scope for n8n webhook access | `Agentic-N8N-Webhook` |
+|-----------|-------------|---------|
+| `YOUR_CLIENT_ID_VAR` | OAuth 2.0 Client ID environment variable name (org-specific) | `MY_ORG_CLIENT_ID` |
+| `YOUR_CLIENT_SECRET_VAR` | OAuth 2.0 Client Secret environment variable name (org-specific) | `MY_ORG_CLIENT_SECRET` |
+| `YOUR_OAUTH_SCOPE` | OAuth scope required for n8n webhook access | `{org-defined-scope}` |
 
 ### Optional Environment Variables
 
-| Variable | Description | Default (Stage) | Production Value |
-| ---------- | ------------- | ----------------- | ------------------ |
-| `TRIMBLE_OAUTH_ENDPOINT` | Trimble OAuth token endpoint | `https://stage.id.trimblecloud.com/oauth/token` | `https://id.trimblecloud.com/oauth/token` |
-| `N8N_WEBHOOK_URL` | n8n webhook base URL | `https://flows-webhook.stage.trimble-ai.com/agentic/workflows/v1/webhook/b698bb8f-2bf9-4e88-b061-fc27945f2ae6` | Contact DevOps for production URL |
+| Variable | Description | Default | Production Value |
+|----------|-------------|---------|-----------------|
+| `YOUR_OAUTH_ENDPOINT` | OAuth token endpoint | `{YOUR_STAGING_OAUTH_ENDPOINT}` | `{YOUR_PROD_OAUTH_ENDPOINT}` |
+| `N8N_WEBHOOK_URL` | n8n webhook base URL | `{YOUR_STAGING_WEBHOOK_URL}` | `{YOUR_PROD_WEBHOOK_URL}` |
 
 ### Environment Setup
 
 ```bash
-# Stage environment (default)
-export TRIMBLE_CLIENT_ID="your-client-id"
-export TRIMBLE_CLIENT_SECRET="your-client-secret"
-export TRIMBLE_OAUTH_SCOPE="Agentic-N8N-Webhook"
+# Configure your org-specific OAuth credentials
+export YOUR_CLIENT_ID_VAR="your-client-id"
+export YOUR_CLIENT_SECRET_VAR="your-client-secret"
+export YOUR_OAUTH_SCOPE="your-oauth-scope"
 
-# Production environment (override endpoints)
-export TRIMBLE_OAUTH_ENDPOINT="https://id.trimblecloud.com/oauth/token"
-export N8N_WEBHOOK_URL="https://flows-webhook.trimble-ai.com/agentic/workflows/v1/webhook/{webhook-id}"
+# Override endpoints for production
+export YOUR_OAUTH_ENDPOINT="{YOUR_PROD_OAUTH_ENDPOINT}"
+export N8N_WEBHOOK_URL="{YOUR_PROD_WEBHOOK_URL}"
 ```
 
 ## When to Use This Skill
@@ -73,24 +75,13 @@ Use this skill when you need to:
 ### Example 1: Extract Single Google Doc
 
 ```javascript
-const env = {
-  TRIMBLE_CLIENT_ID: process.env.TRIMBLE_CLIENT_ID,
-  TRIMBLE_CLIENT_SECRET: process.env.TRIMBLE_CLIENT_SECRET,
-  TRIMBLE_OAUTH_SCOPE: process.env.TRIMBLE_OAUTH_SCOPE
-};
+const { extractDocument } = require('./.github/skills/google-docs-extraction/document-extractor.js');
 
-async function extractDocument(url, env) {
-  const encodedUrl = encodeURIComponent(url);
-  const response = await fetch(`${env.N8N_WEBHOOK_URL}?url=${encodedUrl}`, {
-    method: 'GET',
-    // Use a previously fetched OAuth token from TRIMBLE_OAUTH_ENDPOINT.
-    headers: { Authorization: `Bearer ${env.ACCESS_TOKEN}` }
-  });
-  if (!response.ok) {
-    throw new Error(`Extraction failed (${response.status})`);
-  }
-  return response.text();
-}
+const env = {
+  CLIENT_ID: process.env[YOUR_CLIENT_ID_VAR],
+  CLIENT_SECRET: process.env[YOUR_CLIENT_SECRET_VAR],
+  OAUTH_SCOPE: process.env.YOUR_OAUTH_SCOPE
+};
 
 const result = await extractDocument('https://docs.google.com/document/d/ABC123/edit', env);
 console.log('Extracted content:', result);
@@ -184,7 +175,7 @@ These conditions MUST be verified before proceeding with document extraction:
 
 #### 1. **Missing OAuth Credentials** 🔴 HARD STOP
 
-If `TRIMBLE_CLIENT_ID` or `TRIMBLE_CLIENT_SECRET` are not set, document extraction cannot proceed. The jira-analyst agent must exit with clear remediation steps.
+If the OAuth client ID or client secret environment variables are not set, document extraction cannot proceed. The Jira Analyst agent must exit with clear remediation steps referencing the variable names configured for this deployment.
 
 #### 2. **OAuth Token Fetch Failure** 🟠 Escalate to Manual Review
 
@@ -200,7 +191,7 @@ If a critical document returns 403 Forbidden, log in Open Questions and allow Sp
 
 ### Pre-Output Validation Checklist
 
-Before returning from jira-analyst.agent.md step 3.5:
+Before returning from the Jira Analyst workflow (step 3.5 in `jira-analyst.agent.md`):
 
 - [ ] OAuth credentials validated (if missing: HARD STOP with remediation)
 - [ ] All detected Google Docs URLs processed (success or documented failure)

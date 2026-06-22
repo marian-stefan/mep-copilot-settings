@@ -1,6 +1,6 @@
 ---
-agent: 'Generic Reviewer'
-tools: ['vscode/runCommand', 'read', 'search', 'gitkraken/*', 'agent', 'bitbucket/*', 'execute']
+agent: 'Code Reviewer'
+tools: ['read', 'search', 'agent', 'execute']
 description: 'Guide for reviewing current branch changes versus develop'
 ---
 
@@ -23,22 +23,14 @@ Use this prompt to review all differences between your current branch and the de
 - Focus on a file: `git diff origin/develop...HEAD -- <path/to/file>`
 - Check commit history divergence: `git log --oneline origin/develop..HEAD`
 
-## Project Impact (Optional)
-- Identify impacted modules/components/packages based on changed paths
-- If your workspace provides dependency tooling, generate an affected/dependency graph for validation
+## Codebase Impact
+- Run the dependency graph command for your tech layer (see `{{DEPENDENCY_GRAPH_COMMAND}}` in `tech-layers/{stack}/agents/tech-researcher-story.agent.md`) to identify affected projects.
 
 ## Review Focus Areas
 - Breaking changes or API shifts across libs/apps
 - Dependency graph impacts (cross-domain imports)
 - Security-sensitive updates (auth flows, data access)
-- Performance-sensitive changes in critical paths
-- Missing automated test coverage for risky paths
-
-## Bitbucket Review Checks
-- Verify all unresolved Bitbucket review comments are addressed or responded to
-- Confirm Bitbucket pipeline/build status is green before merge
-- Ensure required Bitbucket approvals are present per branch policy
-- Validate PR description includes scope, risk, and test evidence
+- Missing unit/e2e coverage for risky paths
 
 ## Wrap-Up
 - Summarize findings and unresolved questions

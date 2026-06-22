@@ -1,11 +1,11 @@
 ---
 name: specs-quality-review
-description: Quality gates, scoring formula, and required output format for Spec document review. Use when validating a generated Spec file for completeness, accuracy, and implementation-readiness. Consumed by Generic Reviewer (Spec Review Mode) and any other agent or flow that needs to evaluate a Spec document.
+description: Quality gates, scoring formula, and required output format for Spec document review. Applies to the 5-section compact SPEC format (Acceptance Criteria, Implementation Summary, Security Decisions, Risks & Open Questions, Cross-references). Consumed by the Spec Reviewer agent.
 ---
 
 # Specs Quality Review
 
-Single source of truth for Spec document validation. Any agent evaluating a `docs/specs/{TICKET_KEY}/SPEC-*.md` file MUST apply this skill instead of defining its own gates or scoring.
+Single source of truth for Spec document validation. Any agent evaluating a `docs/specs/{JIRA_KEY}/SPEC-*.md` file MUST apply this skill instead of defining its own gates or scoring.
 
 ## Detection — When to Apply This Skill
 
@@ -17,65 +17,81 @@ The standard PR risk-scoring formula and PR review template do **NOT** apply in 
 
 ## Quality Gates
 
+<!-- Keep gate counts below in sync with the output template's {x}/N placeholders -->
+
 ### Critical Gates — each failure deducts 20 points
 
-- [ ] All required sections present: Overview, Background & Context, Requirements, Technical Architecture, Security Analysis, Implementation Plan, Testing Strategy
-- [ ] No unresolved `{placeholder}` syntax anywhere in the document
-- [ ] At least 2 concrete file paths with real library/module references (no invented paths)
-- [ ] Security Analysis section contains at least 1 named threat vector with a corresponding mitigation strategy
+<!-- 4 critical gates — output template uses {x}/4 -->
+- [ ] Frontmatter present and complete: `issueKey`, `issueType`, `priority`, `complexity`, `backend` fields populated with no `{placeholder}` syntax
+- [ ] Section 1 (Acceptance Criteria) contains at least one testable functional criterion and the standard Technical criteria block
+- [ ] Section 3 (Security Decisions) contains at least one row with a named threat and a concrete mitigation
+- [ ] Section 5 (Cross-references) contains a relative Markdown link to `CONTEXT-{KEY}.md`
 
 ### Important Gates — each failure deducts 8 points
 
-- [ ] Acceptance criteria are testable (not vague or subjective)
-- [ ] Implementation Plan has numbered steps with at least 1 concrete code snippet
-- [ ] Component/service/module names are concrete (not generic placeholders like `MyComponent` or `MyService`)
-- [ ] Non-functional requirements (performance, accessibility, scalability) are present
-- [ ] If backend services required: API contracts section contains real endpoint paths and DTO field definitions
+<!-- 5 important gates — output template uses {x}/5 -->
+- [ ] Section 2 (Implementation Summary) lists at least 2 steps with real file paths (no invented or placeholder paths)
+- [ ] Section 2 contains no code snippets (code belongs in CONTEXT — presence of a fenced code block is a gate failure)
+- [ ] For Bug / Regression Bug: Section 2 opens with a one-sentence root cause statement
+- [ ] Total SPEC length does not exceed 200 lines (target is 150; 200 is the hard ceiling)
+- [ ] No unresolved `{placeholder}` syntax anywhere in the document
 
 ### Optional Gates — informational only, no score impact
 
-- [ ] Before/after code snippets present for file modifications
-- [ ] Epic or Spike-specific sections present when `issueType` is Epic or Spike
-- [ ] Tooling commands (generators, CLI) include all flags with real populated values
+<!-- 3 optional gates — output template uses {x}/3 -->
+- [ ] Section 4 (Risks & Open Questions) is present and either lists items or explicitly states "None identified."
+- [ ] Implementation Summary steps use action verbs (Create, Modify, Register, Delete, …)
+- [ ] For Regression Bug: Section 1 includes a criterion confirming the regression scenario no longer reproduces
 
 ## Scoring Formula
 
 ```
 qualityScore = 100
-  - (critical_failures x 20)
-  - (important_failures x 8)
-  (clamped to 0-100)
+  − (critical_failures × 20)
+  − (important_failures × 8)
+  (clamped to 0–100)
 ```
 
 ## Quality Bucket Thresholds
 
 | Score Range | `qualityBucket` | Orchestrator Action |
 |-------------|-----------------|---------------------|
-| 70 - 100    | `proceed`        | Continue to COMPLETE |
-| 40 - 69     | `iterate`        | Return to Specs Writer for revision (max 2 cycles) |
-| 0 - 39      | `abort`          | Hard stop — spec cannot be salvaged without new input |
+| 70 – 100    | `proceed`        | Continue to COMPLETE |
+| 40 – 69     | `iterate`        | Return to Specs Writer for revision (max 2 cycles) |
+| 0 – 39      | `abort`          | Hard stop — requires human review |
 
 ## Required Output Format
 
-The reviewer MUST return results in this exact format:
+**REQUIRED**: Return this exact structure. The Orchestrator parses `qualityBucket` and `qualityScore` from this output — do not alter key names or heading levels.
 
 ```markdown
-## Spec Quality Review
+## Spec Quality Review: {SPEC_FILENAME}
 
-**Quality Score**: {score}/100
-**Quality Bucket**: proceed | iterate | abort
+**Ticket**: {JIRA_KEY}  
+**Issue Type**: {issueType}  
+**qualityScore**: {0–100}  
+**qualityBucket**: proceed | iterate | abort
 
-### Critical Gates: {x}/4 passed
-- [x] All required sections present
-- [ ] No unresolved placeholders  ← example failure
+### Gate Results
 
-### Important Gates: {x}/5 passed
-- [x] Testable acceptance criteria
-- ...
+**Critical Gates**: {x}/4 passed  
+**Important Gates**: {x}/5 passed  
+**Optional Gates**: {x}/3 passed (informational)
 
-### Optional Gates: {x}/3 passed
-- ...
+#### Failed Critical Gates
+- {gate name}: {specific issue found}
 
-### Recommendations
-- {specific actionable improvement}
+#### Failed Important Gates
+- {gate name}: {specific issue found}
+
+#### Passed Gates
+- {gate name} ✅
+
+### Findings
+
+{Prioritized list of issues found, with specific section references and remediation guidance}
+
+### Decision
+
+**{PROCEED | ITERATE | ABORT}** — {1–2 sentence rationale}
 ```
