@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "etools": {
+      "type": "http",
+      "url": "https://mcp.trimble.tools/mcp"
+    }
+  }
+}

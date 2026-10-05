@@ -1,0 +1,3 @@
+#!/bin/sh
+# Install: ln -s ../../scripts/pre-commit .git/hooks/pre-commit
+exec node "$(git rev-parse --show-toplevel)/scripts/harness.mjs" lint

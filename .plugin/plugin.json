@@ -1,0 +1,10 @@
+{
+  "name": "mep",
+  "version": "0.1.0",
+  "description": "Technology-agnostic multi-agent harness for spec-to-implementation workflows: Jira → Spec → code, tests and review, with a Tool Guardian safety hook.",
+  "author": {
+    "name": "Trimble MEP"
+  },
+  "repository": "https://github.com/trimble-oss/mep-copilot-settings",
+  "keywords": ["spec-driven", "agents", "jira", "bitbucket", "code-review"]
+}

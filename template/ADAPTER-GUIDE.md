@@ -1,72 +1,62 @@
 # Adapter Guide — Writing a Tech Layer
 
-> **Installation**: Run `/init-ai-workflows` in your repository — it detects your tech stack and installs the matching layer automatically. This guide is reference material for understanding the tech layer contract and for authoring new tech layers.
+> **Installation**: a tech layer ships inside the `mep` plugin (or, for a team-local layer, in a repository's `.github/`). Run `/mep:init-ai-workflows` in your repository — it detects your tech stack and records the matching layer as active. This guide is reference material for understanding the tech layer contract and for authoring new tech layers.
 
 A tech layer provides the technology-specific knowledge that the base agents need. This guide describes the contract: which files are mandatory, which are optional, and what each must contain.
 
-## Directory Structure
+## Design: skills-only layers
+
+A tech layer is a set of **skills and rules**, never same-name agent overrides.
+An agent with the same name as a base agent would conflict with it or replace it: the base workflow (gates,
+output contracts, subagent dispatch, audit logging) disappears unless the override
+duplicates it. Instead, base agents stay technology-agnostic and load the active layer's skills
+at runtime:
+
+| Base agent / prompt | Loads from the layer |
+| ------------------- | -------------------- |
+| Tech Researchers (Story/Epic/Spike) | `{stack}-stack-profile` (research steps, snippet format, token values) |
+| Code Reviewer, review prompts | `{stack}-review-checklist`, `{stack}-patterns`, `{stack}-security-practices`, `{stack}-code-review-output` |
+| Test Generator, `/mep:create-tests` | `{stack}-testing`, `{stack}-stack-profile` (`{{TEST_COMMAND}}`, `{{TEST_FILE_GLOB}}`) |
+| Orchestrators, build/lessons/complexity skills | `{stack}-stack-profile` (`{{BUILD_COMMAND}}`, `{{MODULE_LESSONS_PATH}}`, …) |
+
+`{{TOKEN}}` placeholders in base files are **symbolic**: they are never substituted into files.
+Agents resolve them at runtime from `{stack}-stack-profile`. The token registry (names, meaning,
+required/optional) is owned by `skills/stack-profile/SKILL.md` — add tokens there first.
+
+A layer carries no agents. A stack-specific agent, if ever needed, belongs to the plugin's `agents/` under a name that
+does not exist in the base harness; never reuse a base agent name.
+
+## Layout
+
+A plugin discovers only the immediate children of `skills/` and the files directly inside `rules/`, so a layer is a **naming convention** over flat directories, not a folder. Every file of layer `{stack}` starts with `{stack}-`:
 
 ``` markdown
-tech-layers/{stack}/
-├── README.md                         # Setup guide for this stack
-├── agents/                           # Agent overrides (shadow base agents by name)
-│   ├── tech-researcher-story.agent.md  # REQUIRED — build system, dependency discovery
-│   ├── code-reviewer.agent.md          # REQUIRED — language-specific review checklist
-│   ├── test-generator.agent.md         # REQUIRED — test framework conventions
-│   └── backend-service-discovery.agent.md  # OPTIONAL — only if DI scanning differs
-├── skills/
-│   ├── {stack}-patterns/SKILL.md      # REQUIRED — language/framework idioms & anti-patterns
-│   ├── {stack}-testing/SKILL.md       # REQUIRED — test framework conventions & mock lifecycle
-│   ├── security-practices/SKILL.md    # REQUIRED — stack-specific security rules
-│   └── code-review-output/SKILL.md    # REQUIRED — review report template
-└── instructions/
-    ├── testing.instructions.md        # REQUIRED — applyTo test file globs
-    └── security.instructions.md      # REQUIRED — applyTo source file globs
+skills/{stack}-stack-profile/SKILL.md       # REQUIRED — values for every registry token + research steps + snippet format
+skills/{stack}-patterns/SKILL.md            # REQUIRED — language/framework idioms & anti-patterns
+skills/{stack}-testing/SKILL.md             # REQUIRED — test framework conventions & mock lifecycle
+skills/{stack}-security-practices/SKILL.md  # REQUIRED — stack-specific security rules
+skills/{stack}-review-checklist/SKILL.md    # REQUIRED — architecture boundaries + triage into the skills above
+skills/{stack}-code-review-output/SKILL.md  # REQUIRED — review report template
+rules/{stack}-testing.instructions.md       # REQUIRED — applyTo ALL source file globs (Test Companion Rule needs source-file triggers, not just test files)
+rules/{stack}-security.instructions.md      # REQUIRED — applyTo source file globs
+docs/tech-layers/{stack}.md                 # Notes page: stack assumptions and versions
 ```
 
-## Mandatory Agent Overrides
+Nine files (notes page + 6 skills + 2 rules). The layer is **active** when `.github/copilot-instructions.md` § Active Tech Layer names its slug (written by `/mep:init-ai-workflows`). A repository-local layer uses the same names under `.github/skills/` and `.github/instructions/`.
 
-### tech-researcher-story.agent.md
+## Mandatory: `{stack}-stack-profile`
 
-Must provide implementations for all `{{PLACEHOLDER}}` tokens:
+Must contain:
 
-| Placeholder | What to provide |
-| ------------ | ---------------- |
-| `{{BUILD_SYSTEM_PROJECT_DISCOVERY}}` | Shell commands to list affected projects |
-| `{{DEPENDENCY_GRAPH_COMMAND}}` | Command to generate/view dependency graph |
-| `{{CODEBASE_MODULE_TAXONOMY}}` | Layer naming conventions (table: layer → directory pattern → purpose) |
-| `{{STATE_MANAGEMENT_PATTERNS}}` | How state is managed in this stack |
-| `{{SUBSCRIPTION_LIFECYCLE_PATTERN}}` | How subscriptions/resources are cleaned up |
-| `{{TEST_COMMAND}}` | Full test runner command with coverage flags |
-| `{{SCAFFOLD_COMMAND}}` | Code scaffolding/generator command for new modules or classes |
-| `{{MODULE_LESSONS_PATH}}` | Path to the module-scoped lessons file (e.g., `src/{app}/docs/lessons.md`). Written by the implementation orchestrator when module-level corrections are captured. |
-| `{{SHARED_LIB_PATH_PREFIX}}` | Path prefix for shared library detection (e.g., `libs/`, `packages/shared`) — used by complexity assessment Stage 2 escalation |
-| `{{SHARED_LIB_TAG}}` | Module metadata tag name identifying shared libraries (e.g., `type:shared`) — used to detect shared lib cross-cutting scope |
-| `{{DOMAIN_TAG_PREFIX}}` | Module metadata tag prefix for domain classification (e.g., `domain:`) — used to detect cross-domain span and escalate complexity |
+- A **Token values** table with one row for every token in `skills/stack-profile/SKILL.md`.
+  Each value is concrete and runnable, or `n/a — <reason>` for an **Optional** token. `n/a` on a
+  **Required** token, empty values, and `TODO` are validation failures.
+- **Module taxonomy** (layer → directory pattern → purpose, plus the dependency rule) — the value
+  of `{{CODEBASE_MODULE_TAXONOMY}}`.
+- **Research steps** — stack-specific additions to the Tech Researcher workflow (what to grep, what files to read).
+- **Code snippet format** — the language syntax for before/after snippets in CONTEXT documents.
 
-Must also provide:
-
-- Code snippet format examples using the target language syntax
-- Language-specific research commands (what to grep for, what file types to read)
-
-### code-reviewer.agent.md
-
-Must provide:
-
-- Architecture checklist (module/layer boundary rules)
-- Language-specific idioms checklist (e.g., null safety, async patterns)
-- Framework-specific anti-patterns
-- Testing checklist
-- Reference to the tech-layer's `code-review-output/SKILL.md`
-
-### test-generator.agent.md
-
-Must provide:
-
-- `{{TEST_COMMAND}}` replacement — full command with coverage flags
-- Test file naming convention (source → test path mapping)
-- Test structure example with mock lifecycle
-- Coverage verification commands
+Reference: `skills/dotnet-stack-profile/SKILL.md`.
 
 ## Mandatory Skills
 
@@ -91,7 +81,7 @@ Must cover:
 - Coverage threshold configuration
 - Artifact-specific patterns (services, controllers/handlers, state)
 
-### security-practices/SKILL.md
+### {stack}-security-practices/SKILL.md
 
 Must cover at minimum:
 
@@ -101,7 +91,24 @@ Must cover at minimum:
 - Known injection risks for the stack (SQL, XSS, command injection)
 - Secure defaults
 
-### code-review-output/SKILL.md
+**Naming**: always prefix with `{stack}-` (e.g. `dotnet-security-practices`, not bare
+`security-practices`) — the base `skills/security-practices/SKILL.md` index skill
+already owns that unprefixed name, and every tech layer lives in the same flat `skills/`
+directory, so an unprefixed name from two tech layers would collide.
+
+**Registration**: add a row to the base `skills/testing-practices/SKILL.md` and
+`skills/security-practices/SKILL.md` routing tables pointing at this stack's
+`{stack}-testing`/`{stack}-security-practices` skills, so agents that consult the base index
+find this stack.
+
+### {stack}-review-checklist/SKILL.md
+
+Must contain the architecture-boundary rules (layer/module dependency rules) — the only content
+owned here — plus a triage table pointing into `{stack}-patterns`, `{stack}-security-practices`
+and `{stack}-testing` (do not restate their rules), and a reference to `{stack}-code-review-output/SKILL.md`.
+Reference: `dotnet-review-checklist`.
+
+### {stack}-code-review-output/SKILL.md
 
 Must contain the exact template for review reports. The Code Reviewer agent uses this template for all output. It must include:
 
@@ -111,19 +118,19 @@ Must contain the exact template for review reports. The Code Reviewer agent uses
 - Metrics section
 - Follow-up actions checklist
 
-## Mandatory Instructions
+## Mandatory Rules
 
-### testing.instructions.md
+### rules/{stack}-testing.instructions.md
 
 ```yaml
 ---
-applyTo: "**/{test-file-glob}"  # e.g., "**/*Tests.cs" or "**/*.spec.ts"
+applyTo: "**/*.{source-extension}"  # e.g., "**/*.cs" or "**/*.ts" — ALL source files, not just test files
 ---
 ```
 
-Must cover the same rules as `{stack}-testing/SKILL.md` in instruction form — these are auto-applied to test files by the AI coding tool.
+Must cover the same rules as `{stack}-testing/SKILL.md` in instruction form — these are auto-applied to matching files by the AI coding tool. Scope this to **all source files of the stack's extension**, not just test files: `skills/implementation-rules/SKILL.md` § 2.4 Test Companion Rule requires creating/updating a test file when a *source* file changes, so the instruction must fire on source-file edits too, not only when a test file is directly touched.
 
-### security.instructions.md
+### rules/{stack}-security.instructions.md
 
 ```yaml
 ---
@@ -131,58 +138,43 @@ applyTo: "**/{source-file-glob}"  # e.g., "**/*.cs" or "**/*.ts,**/*.html"
 ---
 ```
 
-Must cover the same rules as `security-practices/SKILL.md` in instruction form — auto-applied to source files.
+Must cover the same rules as `{stack}-security-practices/SKILL.md` in instruction form — auto-applied to source files.
 
-## Optional Overrides
+## Project Configuration
 
-### backend-service-discovery.agent.md
+Project-specific values are **never substituted into plugin files**. `/mep:init-ai-workflows` records them in the adopter's `.github/copilot-instructions.md` § Project Identity, and commands read them at run time:
 
-Override only if your stack's service registration pattern differs significantly from the generic OpenAPI discovery workflow. The base agent handles:
-
-- Scanning for service config files
-- Constructing Swagger URLs
-- Fetching and parsing OpenAPI specs
-- Generating data contracts
-
-Override if your stack uses a non-standard service registry (e.g., Consul, custom service mesh config files).
-
-## Prompt Configuration
-
-Some base prompts contain placeholder values that must be set for your project:
-
-| Prompt | Placeholder | What to replace with |
+| Command | Reads | Purpose |
 | -------- | ------------- | --------------------- |
-| `prompts/fix-pr.prompt.md` | `{YOUR_BITBUCKET_PROJECT}`, `{YOUR_BITBUCKET_REPO}` | Your Bitbucket project key and repository slug |
-| `prompts/review-pr.prompt.md` | `{YOUR_BITBUCKET_PROJECT}`, `{YOUR_BITBUCKET_REPO}` | Your Bitbucket project key and repository slug |
-| `skills/google-docs-extraction/SKILL.md` | `YOUR_CLIENT_ID_VAR`, `YOUR_OAUTH_ENDPOINT`, `N8N_WEBHOOK_URL` | Your org's OAuth credentials and n8n webhook endpoints |
-
-These are resolved automatically by `/init-ai-workflows` when you provide your Bitbucket and Jira configuration during setup.
+| `/mep:fix-pr`, `/mep:review-pr` | `Bitbucket project`, `Bitbucket repo` | Bitbucket coordinates for every `etools/bitbucket_*` call; asks when `not set` |
+| `/mep:create-specs` and others | `Jira project`, `Default branch` | Example commands and branch defaults |
 
 ## Audit Log Policy
 
 The base orchestrators and all agents write audit trail entries to `docs/specs/{JIRA_KEY}/audit.log`. This file is **append-only** — agents must use `Edit/append`, never overwrite. If the file does not exist, create it with the first entry.
 
 **Entry format**:
-```
+
+```markdown
 ## {workflowId} | {ISO-8601-timestamp} | {agent-name}
 Decision: {key decision made}
 Output: {output artifact path}
 Warnings: {warnings or fallbacks | none}
 ```
 
-All tech-layer agent overrides that produce artifacts (tech-researcher, code reviewer, test generator) must append entries at completion. The `workflowId` in entries and in SPEC frontmatter enables `/review-harness-health` to correlate outcomes with specific runs.
+The base agents own audit-log appends; tech-layer skills must not add or change audit behavior. The `workflowId` in entries and in SPEC frontmatter enables `/mep:review-harness-health` to correlate outcomes with specific runs.
 
 ## Validation Checklist
 
 Before publishing a tech layer, verify:
 
-- [ ] All `{{PLACEHOLDER}}` tokens are resolved in tech-researcher-story.agent.md (including `{{MODULE_LESSONS_PATH}}`, `{{SHARED_LIB_PATH_PREFIX}}`, `{{SHARED_LIB_TAG}}`, `{{DOMAIN_TAG_PREFIX}}`)
-- [ ] code-reviewer.agent.md references the tech-layer's `code-review-output/SKILL.md`
-- [ ] test-generator.agent.md has `{{TEST_COMMAND}}` resolved and test file naming defined
-- [ ] `testing.instructions.md` has correct `applyTo` glob for this stack's test files
-- [ ] `security.instructions.md` has correct `applyTo` glob for this stack's source files
-- [ ] All code examples in skills use the correct language syntax
-- [ ] README.md documents the tech stack assumptions (versions, frameworks, test libraries)
-- [ ] All tech-layer agents append to `docs/specs/{JIRA_KEY}/audit.log` (never overwrite) using Edit/append
-- [ ] Backend discovery step loads `.github/skills/specs-backend-discovery-checklist/SKILL.md` — do not inline checklists
-- [ ] Any Mermaid diagrams produced apply pre-write validation from `.github/skills/mermaid/SKILL.md`
+- [ ] The layer adds no agent, and no file under `skills/`/`rules/` reuses a base name (every layer file starts with `{stack}-`)
+- [ ] `{stack}-stack-profile` has a value row for every token in `skills/stack-profile/SKILL.md`; Required tokens are not `n/a`; no `TODO` or `{{...}}` inside value cells
+- [ ] `{stack}-review-checklist` references `{stack}-code-review-output/SKILL.md`
+- [ ] `{{TEST_COMMAND}}` gives both full and scoped forms; test file naming is defined in `{stack}-testing`
+- [ ] `{{DEPENDENCY_GRAPH_COMMAND}}` covers consumers (reverse lookup), not only forward references
+- [ ] `rules/{stack}-testing.instructions.md` and `rules/{stack}-security.instructions.md` have `applyTo` covering **all source files** of the stack (the Test Companion Rule fires on source edits)
+- [ ] Skills are named `{stack}-…`, and the routing tables in `skills/testing-practices/SKILL.md` and `skills/security-practices/SKILL.md` have a row for this stack
+- [ ] All code examples use correct language syntax
+- [ ] `docs/tech-layers/{stack}.md` documents stack assumptions (versions, frameworks, test libraries)
+- [ ] Any Mermaid diagrams apply pre-write validation from `skills/mermaid/SKILL.md`
