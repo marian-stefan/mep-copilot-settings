@@ -1,5 +1,8 @@
 # mep-copilot-settings
 
+The repository has been moved to [mep-copilot-settings](https://github.com/trimble-oss/mep-copilot-settings).
+The code remains available here for those who do not yet have a Trimble GitHub account.
+
 Technology-agnostic multi-agent harness for spec-to-implementation workflows, packaged as a **VS Code agent plugin** named `mep`. Install the plugin, run `/mep:init-ai-workflows` once per repository, and you have a working agentic development workflow — nothing is copied into your project except one configuration file.
 
 ## Repository Structure
@@ -27,14 +30,14 @@ In an adopter repo the only file the harness writes is `.github/copilot-instruct
 
 ## Installation
 
-The plugin is installed straight from this repository — there is no separate marketplace. You need git access to `trimble-oss/mep-copilot-settings` (VS Code clones it) and VS Code with GitHub Copilot.
+The plugin is installed straight from this repository — there is no separate marketplace. You need git access to `marian-stefan/mep-copilot-settings` (VS Code clones it) and VS Code with GitHub Copilot.
 
 ### Install
 
 Use either method:
 
-- **Install From Source** — Command Palette → **Chat: Install Plugin From Source** → enter `trimble-oss/mep-copilot-settings` (or the full git URL). Trust the source when asked.
-- **Marketplaces setting** — add `"trimble-oss/mep-copilot-settings"` to `chat.plugins.marketplaces`, then install `mep` from the Extensions view (filter `@agentPlugins`).
+- **Install From Source** — Command Palette → **Chat: Install Plugin From Source** → enter `marian-stefan/mep-copilot-settings` (or the full git URL). Trust the source when asked.
+- **Marketplaces setting** — add `"marian-stefan/mep-copilot-settings"` to `chat.plugins.marketplaces`, then install `mep` from the Extensions view (filter `@agentPlugins`).
 
 Then **reload the window** (Developer: Reload Window). Newly installed or updated plugin skills, agents and hooks are picked up reliably only after a reload.
 
